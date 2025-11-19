@@ -1,0 +1,17 @@
+services:
+  atlas-assistant:
+    container_name: atlas-assistant
+    image: ${DOCKER_IMAGE_TAG}
+    restart: always
+    networks:
+      - matrix-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.atlas-assistant.rule=Host(`atlas.matrix-net.tech`)" # 替换为你的域名
+      - "traefik.http.routers.atlas-assistant.entrypoints=websecure"
+      - "traefik.http.routers.atlas-assistant.service=atlas-assistant"
+      - "traefik.http.routers.atlas-assistant.tls.certresolver=dnspodresolver"
+      - "traefik.http.services.atlas-assistant.loadbalancer.server.port=3000"
+networks:
+  matrix-network:
+    external: true
