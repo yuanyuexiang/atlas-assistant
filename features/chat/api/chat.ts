@@ -1,6 +1,7 @@
 // Chat feature API
 import { get, post, del } from '@/lib/http/http';
-import type { Message, ApiResponse } from '@/types/models';
+import type { Message } from '@/types/models';
+import type { ApiResponse } from '@/types/api';
 
 export interface SendMessageParams {
   conversation_id: string;
