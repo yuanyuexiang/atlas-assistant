@@ -16,7 +16,7 @@ export interface RegisterParams {
 export interface AuthResponse {
   access_token: string;
   token_type: string;
-  user: User;
+  expires_in: number;
 }
 
 export const authApi = {
@@ -31,8 +31,4 @@ export const authApi = {
   // 获取当前用户信息
   getCurrentUser: () =>
     get<User>('/auth/me'),
-
-  // 退出登录
-  logout: () =>
-    post('/auth/logout'),
 };

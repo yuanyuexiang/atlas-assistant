@@ -17,15 +17,18 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      token: localStorage.getItem(TOKEN_KEY),
-      user: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
-      isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
+      token: null,
+      user: null,
+      isAuthenticated: false,
 
       login: async (username, password) => {
         const response = await authApi.login({ username, password });
-        const { access_token, user } = response;
+        const { access_token } = response;
         
         localStorage.setItem(TOKEN_KEY, access_token);
+        
+        // 获取用户信息
+        const user = await authApi.getCurrentUser();
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         
         set({
@@ -37,9 +40,12 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (username, email, password) => {
         const response = await authApi.register({ username, email, password });
-        const { access_token, user } = response;
+        const { access_token } = response;
         
         localStorage.setItem(TOKEN_KEY, access_token);
+        
+        // 获取用户信息
+        const user = await authApi.getCurrentUser();
         localStorage.setItem(USER_KEY, JSON.stringify(user));
         
         set({
@@ -50,7 +56,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        authApi.logout().catch(console.error);
+        // 后端没有logout接口,只需清除本地状态
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
         
@@ -73,11 +79,6 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({
-        token: state.token,
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
     }
   )
 );

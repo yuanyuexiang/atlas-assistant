@@ -42,10 +42,7 @@ http.interceptors.response.use(
       
       switch (status) {
         case 401:
-          message.error('登录已过期，请重新登录');
-          localStorage.removeItem(TOKEN_KEY);
-          localStorage.removeItem('atlas_user');
-          window.location.href = '/login';
+          message.error('认证失败,请重新登录');
           break;
         case 403:
           message.error('没有权限访问');

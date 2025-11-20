@@ -21,8 +21,9 @@ export const LoginForm = () => {
       await login(values.username, values.password);
       message.success('登录成功');
       navigate('/chat');
-    } catch (error) {
-      console.error('登录失败:', error);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || error.message || '登录失败';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -34,8 +35,9 @@ export const LoginForm = () => {
       await register(values.username, values.email, values.password);
       message.success('注册成功');
       navigate('/chat');
-    } catch (error) {
-      console.error('注册失败:', error);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.detail || error.message || '注册失败';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
