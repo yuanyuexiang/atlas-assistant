@@ -108,7 +108,7 @@ Echo 是一个基于 RAG（检索增强生成）的智能客服系统，采用**
 ### 1. 用户注册
 
 ```http
-POST https://atlas.matrix-net.tech/api/auth/register
+POST https://atlas.matrix-net.tech/atlas/api/auth/register
 Content-Type: application/json
 
 {
@@ -135,7 +135,7 @@ Content-Type: application/json
 ### 2. 用户登录
 
 ```http
-POST https://atlas.matrix-net.tech/api/auth/login
+POST https://atlas.matrix-net.tech/atlas/api/auth/login
 Content-Type: application/json
 
 {
@@ -158,14 +158,14 @@ Content-Type: application/json
 所有需要认证的接口都要在请求头中携带 Token：
 
 ```http
-GET https://atlas.matrix-net.tech/api/agents
+GET https://atlas.matrix-net.tech/atlas/api/agents
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ```
 
 ### 4. 获取当前用户信息
 
 ```http
-GET https://atlas.matrix-net.tech/api/auth/me
+GET https://atlas.matrix-net.tech/atlas/api/auth/me
 Authorization: Bearer {token}
 ```
 
@@ -175,14 +175,14 @@ Authorization: Bearer {token}
 
 ### 基础信息
 
-- **生产环境 Base URL**: `https://atlas.matrix-net.tech/api`
+- **生产环境 Base URL**: `https://atlas.matrix-net.tech/atlas/api`
 - **本地开发 Base URL**: `http://localhost:8000/api`
 - **文档地址**: 
-  - Swagger UI: `https://atlas.matrix-net.tech/docs`
-  - ReDoc: `https://atlas.matrix-net.tech/redoc`
-  - 健康检查: `https://atlas.matrix-net.tech/health`
+  - Swagger UI: `https://atlas.matrix-net.tech/atlas/docs`
+  - ReDoc: `https://atlas.matrix-net.tech/atlas/redoc`
+  - 健康检查: `https://atlas.matrix-net.tech/atlas/health`
 
-> 💡 **提示**: 本文档中的示例默认使用生产环境地址 `https://atlas.matrix-net.tech`
+> 💡 **提示**: 本文档中的示例默认使用生产环境地址 `https://atlas.matrix-net.tech/atlas`
 
 ---
 
@@ -191,7 +191,7 @@ Authorization: Bearer {token}
 ### 1.1 注册用户
 
 ```http
-POST https://atlas.matrix-net.tech/api/auth/register
+POST https://atlas.matrix-net.tech/atlas/api/auth/register
 ```
 
 **请求体**：
@@ -207,7 +207,7 @@ POST https://atlas.matrix-net.tech/api/auth/register
 ### 1.2 用户登录
 
 ```http
-POST https://atlas.matrix-net.tech/api/auth/login
+POST https://atlas.matrix-net.tech/atlas/api/auth/login
 ```
 
 **请求体**：
@@ -230,14 +230,14 @@ POST https://atlas.matrix-net.tech/api/auth/login
 ### 1.3 获取当前用户
 
 ```http
-GET https://atlas.matrix-net.tech/api/auth/me
+GET https://atlas.matrix-net.tech/atlas/api/auth/me
 Authorization: Bearer {token}
 ```
 
 ### 1.4 更新当前用户
 
 ```http
-PUT https://atlas.matrix-net.tech/api/auth/me
+PUT https://atlas.matrix-net.tech/atlas/api/auth/me
 Authorization: Bearer {token}
 ```
 
@@ -257,7 +257,7 @@ Authorization: Bearer {token}
 ### 2.1 创建智能体
 
 ```http
-POST https://atlas.matrix-net.tech/api/agents
+POST https://atlas.matrix-net.tech/atlas/api/agents
 Authorization: Bearer {token}
 ```
 
@@ -298,7 +298,7 @@ Authorization: Bearer {token}
 ### 2.2 获取智能体列表
 
 ```http
-GET https://atlas.matrix-net.tech/api/agents?status=active&agent_type=general&skip=0&limit=100
+GET https://atlas.matrix-net.tech/atlas/api/agents?status=active&agent_type=general&skip=0&limit=100
 Authorization: Bearer {token}
 ```
 
@@ -311,14 +311,14 @@ Authorization: Bearer {token}
 ### 2.3 获取智能体详情
 
 ```http
-GET https://atlas.matrix-net.tech/api/agents/{agent_name}
+GET https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
 Authorization: Bearer {token}
 ```
 
 ### 2.4 更新智能体
 
 ```http
-PUT https://atlas.matrix-net.tech/api/agents/{agent_name}
+PUT https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
 Authorization: Bearer {token}
 ```
 
@@ -335,7 +335,7 @@ Authorization: Bearer {token}
 ### 2.5 删除智能体
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/agents/{agent_name}
+DELETE https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
 Authorization: Bearer {token}
 ```
 
@@ -348,7 +348,7 @@ Authorization: Bearer {token}
 ### 3.1 创建客服
 
 ```http
-POST https://atlas.matrix-net.tech/api/conversations
+POST https://atlas.matrix-net.tech/atlas/api/conversations
 Authorization: Bearer {token}
 ```
 
@@ -388,7 +388,7 @@ Authorization: Bearer {token}
 ### 3.2 获取客服列表
 
 ```http
-GET https://atlas.matrix-net.tech/api/conversations?status=online&skip=0&limit=100
+GET https://atlas.matrix-net.tech/atlas/api/conversations?status=online&skip=0&limit=100
 Authorization: Bearer {token}
 ```
 
@@ -400,14 +400,14 @@ Authorization: Bearer {token}
 ### 3.3 获取客服详情
 
 ```http
-GET https://atlas.matrix-net.tech/api/conversations/{conversation_name}
+GET https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
 Authorization: Bearer {token}
 ```
 
 ### 3.4 更新客服
 
 ```http
-PUT https://atlas.matrix-net.tech/api/conversations/{conversation_name}
+PUT https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
 Authorization: Bearer {token}
 ```
 
@@ -425,14 +425,14 @@ Authorization: Bearer {token}
 ### 3.5 删除客服
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/conversations/{conversation_name}
+DELETE https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
 Authorization: Bearer {token}
 ```
 
 ### 3.6 切换智能体
 
 ```http
-POST https://atlas.matrix-net.tech/api/conversations/{conversation_name}/switch-agent
+POST https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}/switch-agent
 Authorization: Bearer {token}
 ```
 
@@ -466,7 +466,7 @@ Authorization: Bearer {token}
 ### 4.1 上传文档
 
 ```http
-POST https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/documents
+POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents
 Authorization: Bearer {token}
 Content-Type: multipart/form-data
 ```
@@ -476,7 +476,7 @@ Content-Type: multipart/form-data
 const formData = new FormData();
 formData.append('file', fileObject);  // PDF/TXT/MD 文件
 
-fetch('https://atlas.matrix-net.tech/api/knowledge-base/customer-service/documents', {
+fetch('https://atlas.matrix-net.tech/atlas/api/knowledge-base/customer-service/documents', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${token}`
@@ -502,7 +502,7 @@ fetch('https://atlas.matrix-net.tech/api/knowledge-base/customer-service/documen
 ### 4.2 获取文档列表
 
 ```http
-GET https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/documents
+GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents
 Authorization: Bearer {token}
 ```
 
@@ -524,7 +524,7 @@ Authorization: Bearer {token}
 ### 4.3 删除文档
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/documents/{file_id}
+DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents/{file_id}
 Authorization: Bearer {token}
 ```
 
@@ -533,7 +533,7 @@ Authorization: Bearer {token}
 ### 4.4 获取知识库统计
 
 ```http
-GET https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/stats
+GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/stats
 Authorization: Bearer {token}
 ```
 
@@ -561,14 +561,14 @@ Authorization: Bearer {token}
 ### 4.5 清空知识库
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/clear
+DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/clear
 Authorization: Bearer {token}
 ```
 
 ### 4.6 重建知识库
 
 ```http
-POST https://atlas.matrix-net.tech/api/knowledge-base/{agent_name}/rebuild
+POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/rebuild
 Authorization: Bearer {token}
 ```
 
@@ -588,7 +588,7 @@ Authorization: Bearer {token}
 ### 5.1 发送消息（同步响应）
 
 ```http
-POST https://atlas.matrix-net.tech/api/chat/{conversation_name}/message
+POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/message
 Authorization: Bearer {token}
 ```
 
@@ -626,7 +626,7 @@ Authorization: Bearer {token}
 ### 5.2 发送消息（流式响应）⚡ 推荐
 
 ```http
-POST https://atlas.matrix-net.tech/api/chat/{conversation_name}/message/stream
+POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/message/stream
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
@@ -673,7 +673,7 @@ data: {"content": "", "done": true, "agent_name": "customer-service"}
 ```javascript
 async function sendMessageStream(conversationName, message) {
   const response = await fetch(
-    `https://atlas.matrix-net.tech/api/chat/${conversationName}/message/stream`,
+    `https://atlas.matrix-net.tech/atlas/api/chat/${conversationName}/message/stream`,
     {
       method: 'POST',
       headers: {
@@ -727,7 +727,7 @@ function sendMessageStreamSSE(conversationName, message) {
   // 注意：EventSource 不支持 POST，需要后端支持 GET + query params
   // 或使用 fetch API 的方式（推荐上面的方法）
   
-  const url = new URL(`https://atlas.matrix-net.tech/api/chat/${conversationName}/message/stream`);
+  const url = new URL(`https://atlas.matrix-net.tech/atlas/api/chat/${conversationName}/message/stream`);
   const eventSource = new EventSource(url);
   let fullResponse = '';
 
@@ -769,7 +769,7 @@ async function sendMessage() {
   
   try {
     const res = await fetch(
-      `https://atlas.matrix-net.tech/api/chat/customer-service-01/message/stream`,
+      `https://atlas.matrix-net.tech/atlas/api/chat/customer-service-01/message/stream`,
       {
         method: 'POST',
         headers: {
@@ -840,7 +840,7 @@ function ChatComponent() {
     
     try {
       const res = await fetch(
-        'https://atlas.matrix-net.tech/api/chat/customer-service-01/message/stream',
+        'https://atlas.matrix-net.tech/atlas/api/chat/customer-service-01/message/stream',
         {
           method: 'POST',
           headers: {
@@ -915,7 +915,7 @@ function ChatComponent() {
 ### 5.3 清空对话历史
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/chat/{conversation_name}/history
+DELETE https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/history
 Authorization: Bearer {token}
 ```
 
@@ -928,35 +928,35 @@ Authorization: Bearer {token}
 ### 6.1 获取用户列表
 
 ```http
-GET https://atlas.matrix-net.tech/api/users?skip=0&limit=100
+GET https://atlas.matrix-net.tech/atlas/api/users?skip=0&limit=100
 Authorization: Bearer {admin_token}
 ```
 
 ### 6.2 获取用户详情
 
 ```http
-GET https://atlas.matrix-net.tech/api/users/{user_id}
+GET https://atlas.matrix-net.tech/atlas/api/users/{user_id}
 Authorization: Bearer {admin_token}
 ```
 
 ### 6.3 创建用户
 
 ```http
-POST https://atlas.matrix-net.tech/api/users
+POST https://atlas.matrix-net.tech/atlas/api/users
 Authorization: Bearer {admin_token}
 ```
 
 ### 6.4 更新用户
 
 ```http
-PUT https://atlas.matrix-net.tech/api/users/{user_id}
+PUT https://atlas.matrix-net.tech/atlas/api/users/{user_id}
 Authorization: Bearer {admin_token}
 ```
 
 ### 6.5 删除用户
 
 ```http
-DELETE https://atlas.matrix-net.tech/api/users/{user_id}
+DELETE https://atlas.matrix-net.tech/atlas/api/users/{user_id}
 Authorization: Bearer {admin_token}
 ```
 
@@ -1038,7 +1038,7 @@ interface User {
 
 ```javascript
 // 配置 API 基础地址
-const API_BASE_URL = 'https://atlas.matrix-net.tech/api';
+const API_BASE_URL = 'https://atlas.matrix-net.tech/atlas/api';
 
 // 1. 注册/登录获取 Token
 const authResponse = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -1132,7 +1132,7 @@ await createConversation({
 });
 
 // 夜班时间切换到夜班智能体
-await fetch('https://atlas.matrix-net.tech/api/conversations/support/switch-agent', {
+await fetch('https://atlas.matrix-net.tech/atlas/api/conversations/support/switch-agent', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${token}`,
@@ -1258,7 +1258,7 @@ class ApiClient {
     }
 
     // 自动添加基础 URL
-    const fullUrl = url.startsWith('http') ? url : `https://atlas.matrix-net.tech${url}`;
+    const fullUrl = url.startsWith('http') ? url : `https://atlas.matrix-net.tech/atlas${url}`;
 
     return fetch(fullUrl, {
       ...options,
@@ -1275,7 +1275,7 @@ class ApiClient {
 
   async refreshToken() {
     // 重新登录
-    const response = await fetch('https://atlas.matrix-net.tech/api/auth/login', {
+    const response = await fetch('https://atlas.matrix-net.tech/atlas/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1354,7 +1354,7 @@ async function uploadWithProgress(agentName, file, onProgress) {
       }
     });
 
-    xhr.open('POST', `https://atlas.matrix-net.tech/api/knowledge-base/${agentName}/documents`);
+    xhr.open('POST', `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${agentName}/documents`);
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.send(formData);
   });
@@ -1386,7 +1386,7 @@ class ChatWidget {
 
     try {
       const response = await fetch(
-        `https://atlas.matrix-net.tech/api/chat/${this.conversationName}/message`,
+        `https://atlas.matrix-net.tech/atlas/api/chat/${this.conversationName}/message`,
         {
           method: 'POST',
           headers: {
@@ -1454,7 +1454,7 @@ class AgentSwitcher {
 
   async switchAgent(newAgentName, reason) {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/api/conversations/${this.conversationName}/switch-agent`,
+      `https://atlas.matrix-net.tech/atlas/api/conversations/${this.conversationName}/switch-agent`,
       {
         method: 'POST',
         headers: {
@@ -1519,7 +1519,7 @@ class KnowledgeBaseManager {
     formData.append('file', file);
 
     const response = await fetch(
-      `https://atlas.matrix-net.tech/api/knowledge-base/${this.agentName}/documents`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/documents`,
       {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token}` },
@@ -1543,7 +1543,7 @@ class KnowledgeBaseManager {
 
   async getStats() {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/api/knowledge-base/${this.agentName}/stats`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/stats`,
       {
         headers: { 'Authorization': `Bearer ${this.token}` }
       }
@@ -1555,7 +1555,7 @@ class KnowledgeBaseManager {
 
   async rebuildWithFiles(fileIdsToKeep) {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/api/knowledge-base/${this.agentName}/rebuild`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/rebuild`,
       {
         method: 'POST',
         headers: {
@@ -1580,7 +1580,7 @@ class KnowledgeBaseManager {
 ```javascript
 // test-api.js
 
-const BASE_URL = 'https://atlas.matrix-net.tech/api';
+const BASE_URL = 'https://atlas.matrix-net.tech/atlas/api';
 let token = '';
 
 // 1. 登录
@@ -1670,7 +1670,7 @@ async function sendMessage() {
 
 ```javascript
 // .env.production
-VITE_API_BASE_URL=https://atlas.matrix-net.tech/api
+VITE_API_BASE_URL=https://atlas.matrix-net.tech/atlas/api
 
 // .env.development
 VITE_API_BASE_URL=http://localhost:8000/api
@@ -1719,9 +1719,9 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 ### D. 在线文档
 
-- **Swagger UI**: https://atlas.matrix-net.tech/docs
-- **ReDoc**: https://atlas.matrix-net.tech/redoc
-- **健康检查**: https://atlas.matrix-net.tech/health
+- **Swagger UI**: https://atlas.matrix-net.tech/atlas/docs
+- **ReDoc**: https://atlas.matrix-net.tech/atlas/redoc
+- **健康检查**: https://atlas.matrix-net.tech/atlas/health
 
 ### E. 常用工具
 
@@ -1730,16 +1730,16 @@ JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
 
 ```bash
 # 登录
-curl -X POST "https://atlas.matrix-net.tech/api/auth/login" \
+curl -X POST "https://atlas.matrix-net.tech/atlas/api/auth/login" \
   -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"admin123"}'
 
 # 获取智能体列表
-curl -X GET "https://atlas.matrix-net.tech/api/agents" \
+curl -X GET "https://atlas.matrix-net.tech/atlas/api/agents" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # 健康检查（无需认证）
-curl https://atlas.matrix-net.tech/health
+curl https://atlas.matrix-net.tech/atlas/health
 ```
 
 ---
@@ -1747,7 +1747,7 @@ curl https://atlas.matrix-net.tech/health
 ## 联系支持
 
 如有问题，请查看：
-- 📚 在线文档：https://atlas.matrix-net.tech/docs
+- 📚 在线文档：https://atlas.matrix-net.tech/atlas/docs
 - 🐛 GitHub Issues：提交 Bug 或功能请求
 - 📧 Email：技术支持邮箱
 

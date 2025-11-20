@@ -160,14 +160,14 @@ npm run dev
 ### 环境变量
 ```bash
 # .env.development
-VITE_API_BASE_URL=https://atlas.matrix-net.tech/api
+VITE_API_BASE_URL=https://atlas.matrix-net.tech/atlas/api
 VITE_APP_TITLE=Atlas Assistant
 VITE_APP_VERSION=1.0.0
 ```
 
 ## API 集成
 
-后端 API：`https://atlas.matrix-net.tech/api`
+后端 API：`https://atlas.matrix-net.tech/atlas/api`
 - 使用 JWT Bearer Token 认证
 - Traefik 反向代理已配置
 - 无需前端 API 代理

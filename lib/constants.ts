@@ -1,5 +1,5 @@
 // API 基础地址
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://atlas.matrix-net.tech/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://atlas.matrix-net.tech/atlas/api';
 
 // 应用信息
 export const APP_TITLE = import.meta.env.VITE_APP_TITLE || 'Atlas Assistant';

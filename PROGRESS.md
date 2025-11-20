@@ -181,8 +181,8 @@ src/
 ## 🌐 访问地址
 
 - **开发环境**: http://localhost:5173
-- **API 后端**: https://atlas.matrix-net.tech/api
-- **后端文档**: https://atlas.matrix-net.tech/docs
+- **API 后端**: https://atlas.matrix-net.tech/atlas/api
+- **后端文档**: https://atlas.matrix-net.tech/atlas/docs
 
 ---
 

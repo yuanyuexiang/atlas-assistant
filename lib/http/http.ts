@@ -4,7 +4,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { message } from 'antd';
 
 // API 基础地址
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://atlas.matrix-net.tech/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://atlas.matrix-net.tech/atlas/api';
 
 // Token 存储键
 const TOKEN_KEY = 'atlas_token';
