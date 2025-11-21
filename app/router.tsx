@@ -4,6 +4,9 @@ import { MainLayout } from '@/components/common/MainLayout/MainLayout';
 import LoginPage from '@/pages/login/LoginPage';
 import ChatPage from '@/pages/chat/ChatPage';
 import AgentsPage from '@/pages/agents/AgentsPage';
+import AgentDetailPage from '@/pages/agents/AgentDetailPage';
+import ConversationsPage from '@/pages/conversations/ConversationsPage';
+import { KnowledgePage } from '@/pages/knowledge/KnowledgePage';
 
 // 受保护的路由组件
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -33,8 +36,9 @@ export function Router() {
           <Route index element={<Navigate to="/chat" replace />} />
           <Route path="chat" element={<ChatPage />} />
           <Route path="agents" element={<AgentsPage />} />
-          <Route path="conversations" element={<div>客服管理（开发中）</div>} />
-          <Route path="knowledge" element={<div>知识库管理（开发中）</div>} />
+          <Route path="agents/:agentName" element={<AgentDetailPage />} />
+          <Route path="conversations" element={<ConversationsPage />} />
+          <Route path="knowledge" element={<KnowledgePage />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/" replace />} />

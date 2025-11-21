@@ -36,6 +36,11 @@ export const formatFileSize = (bytes: number) => {
 };
 
 /**
+ * 格式化字节大小（别名）
+ */
+export const formatBytes = formatFileSize;
+
+/**
  * 复制到剪贴板
  */
 export const copyToClipboard = async (text: string) => {

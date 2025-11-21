@@ -8,7 +8,7 @@ import type { Agent } from '@/types/models';
 export default function AgentsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
-  const { deleteAgent } = useAgent();
+  const { deleteAgent, fetchAgents } = useAgent();
 
   const handleCreate = () => {
     setEditingAgent(null);
@@ -41,10 +41,16 @@ export default function AgentsPage() {
       cancelText: '取消',
       onOk: async () => {
         try {
+          console.log('开始删除智能体:', agent.name);
           await deleteAgent(agent.name);
+          console.log('删除智能体成功:', agent.name);
           message.success('智能体删除成功');
-        } catch (error) {
+          // 刷新列表
+          await fetchAgents();
+        } catch (error: any) {
           console.error('删除失败:', error);
+          const errorMsg = error.response?.data?.detail || error.message || '删除失败';
+          message.error(errorMsg);
         }
       },
     });
@@ -64,6 +70,9 @@ export default function AgentsPage() {
         onClose={() => {
           setFormOpen(false);
           setEditingAgent(null);
+        }}
+        onSuccess={() => {
+          fetchAgents();
         }}
       />
     </>

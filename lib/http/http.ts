@@ -12,7 +12,7 @@ const TOKEN_KEY = 'atlas_token';
 // 创建 axios 实例
 export const http = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 300000, // 5分钟，用于文件上传
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +25,12 @@ http.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // 如果是 FormData，删除默认的 Content-Type，让浏览器自动设置
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+    
     return config;
   },
   (error) => {
