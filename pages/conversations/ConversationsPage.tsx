@@ -46,9 +46,7 @@ export default function ConversationsPage() {
       cancelText: '取消',
       onOk: async () => {
         try {
-          console.log('开始删除客服:', conversation.id);
           await deleteConversation(conversation.id);
-          console.log('删除客服成功:', conversation.id);
           message.success('客服删除成功');
           // 刷新列表
           await fetchConversations();

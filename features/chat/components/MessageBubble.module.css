@@ -36,6 +36,30 @@
   color: #fff;
 }
 
+.moreButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.bubble:hover .moreButton {
+  opacity: 0.6;
+}
+
+.moreButton:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.container.user .moreButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .cursor {
   display: inline-block;
   animation: blink 1s infinite;

@@ -99,11 +99,9 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
   },
 
   clearKnowledge: async (agentName) => {
-    console.log('[Knowledge Store] 清空知识库:', agentName);
     set({ loading: true });
     try {
       await knowledgeApi.clear(agentName);
-      console.log('[Knowledge Store] 清空成功');
       set({ files: [], loading: false });
     } catch (error) {
       console.error('[Knowledge Store] 清空知识库失败:', error);
@@ -113,11 +111,9 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
   },
 
   rebuildIndex: async (agentName) => {
-    console.log('[Knowledge Store] 重建索引:', agentName);
     set({ loading: true });
     try {
       await knowledgeApi.rebuild(agentName);
-      console.log('[Knowledge Store] 重建索引成功');
       set({ loading: false });
     } catch (error) {
       console.error('[Knowledge Store] 重建索引失败:', error);

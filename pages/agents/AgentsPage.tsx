@@ -41,9 +41,7 @@ export default function AgentsPage() {
       cancelText: '取消',
       onOk: async () => {
         try {
-          console.log('开始删除智能体:', agent.name);
           await deleteAgent(agent.name);
-          console.log('删除智能体成功:', agent.name);
           message.success('智能体删除成功');
           // 刷新列表
           await fetchAgents();

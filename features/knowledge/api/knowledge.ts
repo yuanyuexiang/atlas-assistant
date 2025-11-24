@@ -33,28 +33,16 @@ export interface KnowledgeStats {
 export const knowledgeApi = {
   // 上传文件到智能体
   upload: async (agentName: string, files: File[]) => {
-    console.log('[Knowledge API] 准备上传到:', agentName);
-    console.log('[Knowledge API] 文件数量:', files.length);
-    
     const formData = new FormData();
-    files.forEach((file, index) => {
-      console.log(`[Knowledge API] 添加文件 ${index + 1}:`, file.name, file.size, 'bytes');
-      // 后端可能期望的字段名是 'files' 或 'file'
+    files.forEach((file) => {
       formData.append('files', file, file.name);
     });
-
-    console.log('[Knowledge API] 请求 URL:', `/knowledge-base/${agentName}/documents`);
-    console.log('[Knowledge API] FormData entries:');
-    for (let pair of formData.entries()) {
-      console.log('  -', pair[0], ':', pair[1]);
-    }
     
     // 不要手动设置 Content-Type，让浏览器自动设置（包含 boundary）
     return http.post<{ uploaded_files: DocumentInfo[] }>(
       `/knowledge-base/${agentName}/documents`,
       formData
     ).then(res => {
-      console.log('[Knowledge API] 上传响应:', res.data);
       return res.data;
     }).catch(error => {
       console.error('[Knowledge API] 上传失败:', error.response?.data);

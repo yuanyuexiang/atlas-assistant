@@ -1,0 +1,375 @@
+{
+  "summary": {
+    "totalTests": 26,
+    "passed": 25,
+    "failed": 1,
+    "passRate": "96.2",
+    "totalDuration": 11655,
+    "avgDuration": "448.27",
+    "timestamp": "2025-11-24T15:11:36.669Z"
+  },
+  "moduleStats": {
+    "认证模块": {
+      "total": 6,
+      "passed": 5,
+      "failed": 1,
+      "duration": 2254
+    },
+    "智能体模块": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "duration": 605
+    },
+    "知识库模块": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration": 3586
+    },
+    "客服模块": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "duration": 261
+    },
+    "对话模块": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "duration": 1834
+    },
+    "流式对话": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 66
+    }
+  },
+  "details": [
+    {
+      "module": "认证模块",
+      "test": "健康检查",
+      "passed": false,
+      "duration": 485,
+      "error": "[object Object]",
+      "details": {},
+      "timestamp": "2025-11-24T15:11:25.502Z"
+    },
+    {
+      "module": "认证模块",
+      "test": "用户注册",
+      "passed": true,
+      "duration": 461,
+      "error": null,
+      "details": {
+        "username": "test_user_1763997085014",
+        "email": "test_1763997085014@example.com"
+      },
+      "timestamp": "2025-11-24T15:11:25.971Z"
+    },
+    {
+      "module": "认证模块",
+      "test": "用户登录",
+      "passed": true,
+      "duration": 406,
+      "error": null,
+      "details": {
+        "token_type": "bearer",
+        "expires_in": 1800
+      },
+      "timestamp": "2025-11-24T15:11:26.379Z"
+    },
+    {
+      "module": "认证模块",
+      "test": "获取当前用户",
+      "passed": true,
+      "duration": 47,
+      "error": null,
+      "details": {
+        "username": "test_user_1763997085014",
+        "email": "test_1763997085014@example.com",
+        "full_name": "测试用户",
+        "id": "15b693ba-97de-4019-bc56-106f5233d6e6",
+        "is_active": true,
+        "is_superuser": false,
+        "created_at": "2025-11-24T15:11:26.940766"
+      },
+      "timestamp": "2025-11-24T15:11:26.426Z"
+    },
+    {
+      "module": "认证模块",
+      "test": "更新用户信息",
+      "passed": true,
+      "duration": 495,
+      "error": null,
+      "details": {
+        "full_name": "更新后的测试用户"
+      },
+      "timestamp": "2025-11-24T15:11:26.922Z"
+    },
+    {
+      "module": "认证模块",
+      "test": "错误密码登录",
+      "passed": true,
+      "duration": 360,
+      "error": null,
+      "details": {},
+      "timestamp": "2025-11-24T15:11:27.283Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "创建智能体 (general)",
+      "passed": true,
+      "duration": 264,
+      "error": null,
+      "details": {
+        "name": "test_agent_1763997087284",
+        "type": "general"
+      },
+      "timestamp": "2025-11-24T15:11:27.549Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "创建智能体 (legal)",
+      "passed": true,
+      "duration": 75,
+      "error": null,
+      "details": {
+        "name": "test_agent_legal_1763997087284",
+        "type": "legal"
+      },
+      "timestamp": "2025-11-24T15:11:27.625Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "获取智能体列表",
+      "passed": true,
+      "duration": 67,
+      "error": null,
+      "details": {
+        "count": 12
+      },
+      "timestamp": "2025-11-24T15:11:27.693Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "获取智能体详情",
+      "passed": true,
+      "duration": 61,
+      "error": null,
+      "details": {
+        "name": "test_agent_1763997087284",
+        "type": "general"
+      },
+      "timestamp": "2025-11-24T15:11:27.755Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "更新智能体",
+      "passed": true,
+      "duration": 55,
+      "error": null,
+      "details": {
+        "name": "test_agent_1763997087284",
+        "new_display_name": "更新后的智能体名称"
+      },
+      "timestamp": "2025-11-24T15:11:27.810Z"
+    },
+    {
+      "module": "智能体模块",
+      "test": "获取智能体列表（筛选）",
+      "passed": true,
+      "duration": 83,
+      "error": null,
+      "details": {
+        "count": 10
+      },
+      "timestamp": "2025-11-24T15:11:27.893Z"
+    },
+    {
+      "module": "知识库模块",
+      "test": "获取知识库统计",
+      "passed": true,
+      "duration": 54,
+      "error": null,
+      "details": {
+        "agent_name": "test_agent_1763997087284",
+        "collection_name": "agent_test_agent_1763997087284",
+        "total_files": 0,
+        "total_chunks": 0,
+        "total_vectors": 0,
+        "total_size_mb": 0,
+        "files": []
+      },
+      "timestamp": "2025-11-24T15:11:30.961Z"
+    },
+    {
+      "module": "知识库模块",
+      "test": "上传文档",
+      "passed": true,
+      "duration": 3329,
+      "error": null,
+      "details": {
+        "filename": "test-document-1763997090961.txt",
+        "file_id": "ca84003d-fe90-46dc-ad2a-ed4173618d34",
+        "chunks_count": 0
+      },
+      "timestamp": "2025-11-24T15:11:34.290Z"
+    },
+    {
+      "module": "知识库模块",
+      "test": "获取文档列表",
+      "passed": true,
+      "duration": 41,
+      "error": null,
+      "details": {
+        "count": 1
+      },
+      "timestamp": "2025-11-24T15:11:34.332Z"
+    },
+    {
+      "module": "知识库模块",
+      "test": "获取知识库统计",
+      "passed": true,
+      "duration": 64,
+      "error": null,
+      "details": {
+        "agent_name": "test_agent_1763997087284",
+        "collection_name": "agent_test_agent_1763997087284",
+        "total_files": 1,
+        "total_chunks": 0,
+        "total_vectors": 0,
+        "total_size_mb": 0,
+        "files": [
+          {
+            "id": "ca84003d-fe90-46dc-ad2a-ed4173618d34",
+            "filename": "test_agent_1763997087284_test-document-1763997090961.txt",
+            "upload_time": "2025-11-24 15:11:35",
+            "file_size": 399,
+            "chunks_count": 0,
+            "file_type": "txt"
+          }
+        ]
+      },
+      "timestamp": "2025-11-24T15:11:34.397Z"
+    },
+    {
+      "module": "知识库模块",
+      "test": "删除文档",
+      "passed": true,
+      "duration": 98,
+      "error": null,
+      "details": {},
+      "timestamp": "2025-11-24T15:11:34.496Z"
+    },
+    {
+      "module": "客服模块",
+      "test": "创建客服",
+      "passed": true,
+      "duration": 47,
+      "error": null,
+      "details": {
+        "name": "test_conv_1763997094496",
+        "agent_name": "test_agent_1763997087284"
+      },
+      "timestamp": "2025-11-24T15:11:34.545Z"
+    },
+    {
+      "module": "客服模块",
+      "test": "获取客服列表",
+      "passed": true,
+      "duration": 60,
+      "error": null,
+      "details": {
+        "count": 7
+      },
+      "timestamp": "2025-11-24T15:11:34.605Z"
+    },
+    {
+      "module": "客服模块",
+      "test": "获取客服详情",
+      "passed": true,
+      "duration": 37,
+      "error": null,
+      "details": {
+        "name": "test_conv_1763997094496",
+        "status": "online"
+      },
+      "timestamp": "2025-11-24T15:11:34.644Z"
+    },
+    {
+      "module": "客服模块",
+      "test": "更新客服",
+      "passed": true,
+      "duration": 72,
+      "error": null,
+      "details": {
+        "name": "test_conv_1763997094496",
+        "new_display_name": "更新后的客服名称"
+      },
+      "timestamp": "2025-11-24T15:11:34.717Z"
+    },
+    {
+      "module": "客服模块",
+      "test": "获取客服列表（筛选）",
+      "passed": true,
+      "duration": 45,
+      "error": null,
+      "details": {
+        "count": 7
+      },
+      "timestamp": "2025-11-24T15:11:34.762Z"
+    },
+    {
+      "module": "对话模块",
+      "test": "发送消息: 你好",
+      "passed": true,
+      "duration": 85,
+      "error": null,
+      "details": {
+        "message_length": 47,
+        "knowledge_base_used": true
+      },
+      "timestamp": "2025-11-24T15:11:34.848Z"
+    },
+    {
+      "module": "对话模块",
+      "test": "发送消息: 介绍一下你们的产品特点",
+      "passed": true,
+      "duration": 54,
+      "error": null,
+      "details": {
+        "message_length": 47,
+        "knowledge_base_used": true
+      },
+      "timestamp": "2025-11-24T15:11:34.902Z"
+    },
+    {
+      "module": "对话模块",
+      "test": "多轮对话",
+      "passed": true,
+      "duration": 1695,
+      "error": null,
+      "details": {
+        "rounds": 3,
+        "session_id": "test_session_1763997094903"
+      },
+      "timestamp": "2025-11-24T15:11:36.598Z"
+    },
+    {
+      "module": "流式对话",
+      "test": "流式消息",
+      "passed": true,
+      "duration": 66,
+      "error": null,
+      "details": {
+        "ttfb": 66,
+        "chunk_count": 1,
+        "content_length": 47,
+        "chars_per_second": 712
+      },
+      "timestamp": "2025-11-24T15:11:36.667Z"
+    }
+  ]
+}

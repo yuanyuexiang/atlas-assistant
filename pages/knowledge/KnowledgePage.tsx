@@ -41,7 +41,6 @@ export const KnowledgePage = () => {
   // 当选中智能体时，加载其知识库文件
   useEffect(() => {
     if (selectedAgentName) {
-      console.log('[KnowledgePage] 加载知识库:', selectedAgentName);
       fetchFiles(selectedAgentName).catch(error => {
         if (error.response?.status !== 404) {
           console.error('[KnowledgePage] 加载失败:', error);
@@ -51,7 +50,6 @@ export const KnowledgePage = () => {
   }, [selectedAgentName, fetchFiles]);
 
   const handleAgentTabChange = (agentName: string) => {
-    console.log('[KnowledgePage] 切换智能体:', agentName);
     setSelectedAgentName(agentName);
     setSearchQuery(''); // 切换智能体时清空搜索
   };
