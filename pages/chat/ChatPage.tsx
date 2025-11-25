@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Layout, Select, Button, Space, App } from 'antd';
-import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Select, Button, Space, App, Badge, Tooltip, Card } from 'antd';
+import { 
+  ReloadOutlined, 
+  CustomerServiceOutlined,
+  MessageOutlined,
+  HistoryOutlined 
+} from '@ant-design/icons';
 import { ChatWindow } from '@/features/chat/components/ChatWindow';
 import { ChatInput } from '@/features/chat/components/ChatInput';
 import { useConversationList } from '@/features/conversation/hooks/useConversation';
 import { useChatStore } from '@/features/chat/store';
 import styles from './ChatPage.module.css';
 
-const { Content, Header } = Layout;
-
 export default function ChatPage() {
   const [conversationId, setConversationId] = useState<string>('');
   const { conversations, loading } = useConversationList();
-  const { loadMessages, clearHistory } = useChatStore();
+  const { loadMessages, clearHistory, messages } = useChatStore();
   const { message } = App.useApp();
 
   // 自动选择第一个客服
@@ -46,51 +49,102 @@ export default function ChatPage() {
     }
   };
 
+  const selectedConversation = conversations.find(c => c.id === conversationId);
+  const messageCount = messages[conversationId]?.length || 0;
+
   return (
-    <Layout className={styles.layout}>
-      <Header className={styles.header}>
-        <Space style={{ width: '100%' }} direction="horizontal">
-          <Select
-            style={{ minWidth: 200, flex: 1 }}
-            placeholder="选择客服"
-            value={conversationId || undefined}
-            onChange={setConversationId}
-            loading={loading}
-            options={conversations.map(c => ({
-              value: c.id,
-              label: c.display_name,
-              disabled: c.status === 'offline',
-            }))}
-          />
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={handleRefresh}
-            disabled={!conversationId}
-          >
-            刷新
-          </Button>
-          <Button 
-            icon={<DeleteOutlined />} 
-            danger 
-            onClick={handleClearHistory}
-            disabled={!conversationId}
-          >
-            清空历史
-          </Button>
-        </Space>
-      </Header>
-      <Content className={styles.content}>
-        {conversationId ? (
-          <>
-            <ChatWindow conversationId={conversationId} />
-            <ChatInput conversationId={conversationId} />
-          </>
-        ) : (
-          <div className={styles.empty}>
-            <p>请选择一个客服开始对话</p>
+    <div className={styles.pageContainer}>
+      <div className={styles.contentWrapper}>
+        {/* 顶部工具栏 */}
+        <Card className={styles.headerCard} bordered={false}>
+          <div className={styles.headerContent}>
+            <div className={styles.titleSection}>
+              <CustomerServiceOutlined className={styles.titleIcon} />
+              <div className={styles.titleInfo}>
+                <h2 className={styles.title}>客服对话</h2>
+                {selectedConversation && (
+                  <div className={styles.subtitle}>
+                    <Badge 
+                      status={selectedConversation.status === 'online' ? 'success' : 'default'} 
+                      text={selectedConversation.status === 'online' ? '在线' : '离线'}
+                    />
+                    {messageCount > 0 && (
+                      <span className={styles.messageCount}>
+                        <MessageOutlined /> {messageCount} 条消息
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className={styles.toolbar}>
+              <Select
+                className={styles.select}
+                placeholder="选择客服"
+                value={conversationId || undefined}
+                onChange={setConversationId}
+                loading={loading}
+                suffixIcon={<CustomerServiceOutlined />}
+                popupClassName={styles.selectDropdown}
+                options={conversations.map(c => ({
+                  value: c.id,
+                  label: (
+                    <div className={styles.selectOption}>
+                      <span>{c.display_name}</span>
+                      <Badge 
+                        status={c.status === 'online' ? 'success' : 'default'}
+                        className={styles.statusBadge}
+                      />
+                    </div>
+                  ),
+                  disabled: c.status === 'offline',
+                }))}
+              />
+              
+              <Space size="small">
+                <Tooltip title="刷新消息">
+                  <Button 
+                    type="text"
+                    icon={<ReloadOutlined />} 
+                    onClick={handleRefresh}
+                    disabled={!conversationId}
+                    className={styles.toolButton}
+                  />
+                </Tooltip>
+                <Tooltip title="清空历史">
+                  <Button 
+                    type="text"
+                    icon={<HistoryOutlined />}
+                    onClick={handleClearHistory}
+                    disabled={!conversationId}
+                    danger
+                    className={styles.toolButton}
+                  />
+                </Tooltip>
+              </Space>
+            </div>
           </div>
-        )}
-      </Content>
-    </Layout>
+        </Card>
+
+        {/* 聊天区域 */}
+        <Card className={styles.chatCard} bordered={false}>
+          {conversationId ? (
+            <div className={styles.chatContainer}>
+              <ChatWindow conversationId={conversationId} />
+              <ChatInput conversationId={conversationId} />
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>
+                <CustomerServiceOutlined />
+              </div>
+              <h3>欢迎使用客服系统</h3>
+              <p>请选择一个客服开始对话</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
   );
 }

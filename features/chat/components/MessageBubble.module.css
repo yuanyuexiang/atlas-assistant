@@ -1,93 +1,194 @@
 .container {
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  animation: fadeIn 0.3s ease-in;
+  gap: 16px;
+  margin-bottom: 20px;
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  animation-fill-mode: forwards;
 }
 
 .container.user {
   flex-direction: row-reverse;
 }
 
+/* 头像 */
 .avatar {
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
+.avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 内容区域 */
 .content {
   display: flex;
   flex-direction: column;
-  max-width: 70%;
+  max-width: 75%;
+  min-width: 120px;
 }
 
 .container.user .content {
   align-items: flex-end;
 }
 
+/* 气泡 */
 .bubble {
-  background: #f0f0f0;
-  padding: 12px 16px;
-  border-radius: 12px;
+  background: white;
+  padding: 14px 18px;
+  border-radius: 16px;
   word-break: break-word;
   position: relative;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.bubble:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .container.user .bubble {
-  background: #1890ff;
-  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
+.container.user .bubble:hover {
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+}
+
+/* AI 消息的渐变背景 */
+.container.assistant .bubble {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* Markdown 样式 */
+.bubble :global(p) {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.bubble :global(code) {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.container.user .bubble :global(code) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.bubble :global(pre) {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.container.user .bubble :global(pre) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.bubble :global(ul),
+.bubble :global(ol) {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.bubble :global(li) {
+  margin: 4px 0;
+}
+
+/* 更多按钮 */
 .moreButton {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s;
-  padding: 4px;
-  border-radius: 4px;
+  transition: all 0.3s ease;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 10;
 }
 
 .bubble:hover .moreButton {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .moreButton:hover {
   opacity: 1 !important;
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.1);
 }
 
 .container.user .moreButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
 }
 
+/* 打字光标 */
 .cursor {
   display: inline-block;
-  animation: blink 1s infinite;
-  margin-left: 2px;
+  animation: blink 1.2s infinite;
+  margin-left: 4px;
+  font-weight: bold;
+  color: #667eea;
 }
 
+/* 时间戳 */
 .time {
   font-size: 12px;
-  margin-top: 4px;
-  padding: 0 8px;
+  margin-top: 6px;
+  padding: 0 10px;
+  color: #999;
+  transition: color 0.3s ease;
 }
 
-@keyframes fadeIn {
+.container:hover .time {
+  color: #666;
+}
+
+/* 动画 */
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes blink {
-  0%, 50% {
+  0%, 45% {
     opacity: 1;
   }
-  51%, 100% {
+  50%, 95% {
     opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .content {
+    max-width: 85%;
+  }
+  
+  .bubble {
+    padding: 12px 16px;
+    font-size: 14px;
   }
 }
