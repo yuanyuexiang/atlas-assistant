@@ -55,11 +55,40 @@ export const knowledgeApi = {
     const response = await http.get<any>(`/knowledge-base/${agentName}/documents`);
     const data = response.data;
     
+    console.log('[Knowledge API] 获取文件列表 - 原始响应:', data);
+    
+    let fileList: any[] = [];
+    
     // 处理可能的返回格式
-    if (data && typeof data === 'object' && 'files' in data) {
-      return data.files as DocumentInfo[];
+    if (data && typeof data === 'object') {
+      if ('data' in data && Array.isArray(data.data)) {
+        // 格式: {success: true, data: [...]}
+        fileList = data.data;
+      } else if ('files' in data && Array.isArray(data.files)) {
+        // 格式: {files: [...]}
+        fileList = data.files;
+      } else if (Array.isArray(data)) {
+        // 格式: [...]
+        fileList = data;
+      }
+    } else if (Array.isArray(data)) {
+      fileList = data;
     }
-    return Array.isArray(data) ? data : [];
+    
+    console.log('[Knowledge API] 提取的文件列表:', fileList);
+    
+    // 规范化数据格式
+    const normalizedFiles = fileList.map((file: any) => ({
+      file_id: file.file_id || file.id || '',
+      filename: file.filename || file.name || file.file_name || '',
+      file_size_mb: parseFloat(file.file_size_mb || file.size_mb || file.size || 0),
+      chunks_count: parseInt(file.chunks_count || file.chunks || file.chunk_count || 0),
+      upload_time: file.upload_time || file.uploaded_at || file.created_at || new Date().toISOString(),
+    }));
+    
+    console.log('[Knowledge API] 规范化后的文件列表:', normalizedFiles);
+    
+    return normalizedFiles as DocumentInfo[];
   },
 
   // 删除指定文件
