@@ -18,7 +18,7 @@ interface ConversationFormProps {
 export const ConversationForm = ({ open, conversation, onClose, onSuccess }: ConversationFormProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const { createConversation, updateConversation } = useConversation();
+  const { createConversation, updateConversation, switchAgent } = useConversation();
   const { agents } = useAgentList({ status: 'active' }); // 只显示活跃的智能体
   const isEdit = !!conversation;
 
@@ -42,22 +42,38 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
       setLoading(true);
 
       if (isEdit && conversation) {
+        // 检查智能体是否改变
+        const agentChanged = values.agent_name && values.agent_name !== conversation.agent_name;
+        
+        // 先更新基本信息
         await updateConversation(conversation.id, {
           display_name: values.display_name,
           welcome_message: values.welcome_message,
           status: values.status,
         });
-        message.success('客服更新成功');
+        
+        // 如果智能体改变，调用切换接口
+        if (agentChanged) {
+          await switchAgent(conversation.id, values.agent_name);
+          message.success('客服更新成功，智能体已切换');
+        } else {
+          message.success('客服更新成功');
+        }
       } else {
         await createConversation(values);
         message.success('客服创建成功');
       }
 
+      // 只有成功时才关闭对话框和重置表单
       form.resetFields();
       onClose();
       onSuccess?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('提交失败:', error);
+      // 显示错误信息
+      const errorMsg = error.response?.data?.detail || error.message || '操作失败，请重试';
+      message.error(errorMsg);
+      // 不关闭对话框，让用户可以修改后重试
     } finally {
       setLoading(false);
     }
@@ -102,65 +118,29 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
           <Input placeholder="例如: 客服小美" />
         </Form.Item>
 
-        {!isEdit && (
-          <Form.Item
-            label="关联智能体"
-            name="agent_name"
-            rules={[{ required: true, message: '请选择关联的智能体' }]}
-            extra="请选择一个活跃的智能体"
+        <Form.Item
+          label="关联智能体"
+          name="agent_name"
+          rules={[{ required: true, message: '请选择关联的智能体' }]}
+          extra={isEdit ? '修改智能体将自动调用切换功能' : '请选择一个活跃的智能体'}
+        >
+          <Select 
+            placeholder="选择智能体" 
+            showSearch
+            optionFilterProp="children"
+            suffixIcon={<RobotOutlined />}
           >
-            <Select 
-              placeholder="选择智能体" 
-              showSearch
-              optionFilterProp="children"
-            >
-              {agents.map((agent) => (
-                <Select.Option key={agent.name} value={agent.name}>
-                  {agent.display_name} ({agent.name})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        )}
-
-        {isEdit && conversation && (
-          <Form.Item
-            label="当前关联智能体"
-            extra='如需更换智能体，请点击卡片上的"切换智能体"按钮'
-          >
-            <div style={{ 
-              padding: '12px 16px',
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
-              borderRadius: '12px',
-              border: '2px solid rgba(102, 126, 234, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '20px'
-              }}>
-                <RobotOutlined />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '15px', fontWeight: 600, color: '#333', marginBottom: '2px' }}>
-                  {conversation.agent_display_name}
+            {agents.map((agent) => (
+              <Select.Option key={agent.name} value={agent.name}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <RobotOutlined style={{ color: '#667eea' }} />
+                  <span>{agent.display_name}</span>
+                  <span style={{ color: '#999', fontSize: '12px' }}>({agent.name})</span>
                 </div>
-                <div style={{ fontSize: '13px', color: '#999' }}>
-                  {conversation.agent_name}
-                </div>
-              </div>
-            </div>
-          </Form.Item>
-        )}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
         {isEdit && (
           <Form.Item
