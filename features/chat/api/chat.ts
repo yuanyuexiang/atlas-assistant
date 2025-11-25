@@ -16,15 +16,15 @@ export const chatApi = {
 
   // 获取对话消息列表
   getMessages: (conversationId: string, page = 1, pageSize = 50) =>
-    get<ApiResponse<Message[]>>(`/chat/conversations/${conversationId}/messages`, {
+    get<ApiResponse<Message[]>>(`/conversations/${conversationId}/messages`, {
       params: { page, page_size: pageSize },
     }),
 
   // 删除消息
-  deleteMessage: (messageId: string) =>
-    del(`/chat/messages/${messageId}`),
+  deleteMessage: (conversationId: string, messageId: string) =>
+    del(`/conversations/${conversationId}/messages/${messageId}`),
 
   // 清空对话历史
   clearHistory: (conversationId: string) =>
-    del(`/chat/conversations/${conversationId}/messages`),
+    del(`/conversations/${conversationId}/messages`),
 };

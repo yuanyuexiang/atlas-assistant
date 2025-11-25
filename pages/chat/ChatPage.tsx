@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layout, Select, Button, Space, message } from 'antd';
+import { Layout, Select, Button, Space, App } from 'antd';
 import { DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ChatWindow } from '@/features/chat/components/ChatWindow';
 import { ChatInput } from '@/features/chat/components/ChatInput';
@@ -11,13 +11,9 @@ const { Content, Header } = Layout;
 
 export default function ChatPage() {
   const [conversationId, setConversationId] = useState<string>('');
-  const { conversations, loading, fetchConversations } = useConversationList();
+  const { conversations, loading } = useConversationList();
   const { loadMessages, clearHistory } = useChatStore();
-
-  // 加载客服列表
-  useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+  const { message } = App.useApp();
 
   // 自动选择第一个客服
   useEffect(() => {

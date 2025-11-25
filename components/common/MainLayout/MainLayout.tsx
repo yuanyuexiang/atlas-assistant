@@ -1,4 +1,5 @@
-import { Layout, Menu, Avatar, Dropdown, Typography } from 'antd';
+import { useState } from 'react';
+import { Layout, Menu, Avatar, Dropdown, Typography, Badge, Tooltip } from 'antd';
 import {
   MessageOutlined,
   RobotOutlined,
@@ -6,6 +7,10 @@ import {
   BookOutlined,
   LogoutOutlined,
   UserOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SettingOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -18,35 +23,64 @@ export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
     {
       key: '/chat',
-      icon: <MessageOutlined />,
-      label: '对话',
+      icon: (
+        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+          <MessageOutlined />
+        </div>
+      ),
+      label: <span className={styles.menuLabel}>对话</span>,
     },
     {
       key: '/agents',
-      icon: <RobotOutlined />,
-      label: '智能体',
+      icon: (
+        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+          <RobotOutlined />
+        </div>
+      ),
+      label: <span className={styles.menuLabel}>智能体</span>,
     },
     {
       key: '/conversations',
-      icon: <TeamOutlined />,
-      label: '客服',
+      icon: (
+        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+          <TeamOutlined />
+        </div>
+      ),
+      label: <span className={styles.menuLabel}>客服</span>,
     },
     {
       key: '/knowledge',
-      icon: <BookOutlined />,
-      label: '知识库',
+      icon: (
+        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+          <BookOutlined />
+        </div>
+      ),
+      label: <span className={styles.menuLabel}>知识库</span>,
     },
   ];
 
   const userMenuItems = [
     {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: '设置',
+      onClick: () => {
+        // TODO: 打开设置页面
+      },
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: '退出登录',
+      danger: true,
       onClick: () => {
         logout();
         navigate('/login');
@@ -56,31 +90,107 @@ export const MainLayout = () => {
 
   return (
     <Layout className={styles.layout}>
-      <Header className={styles.header}>
-        <div className={styles.logo}>
-          <RobotOutlined style={{ fontSize: '24px' }} />
-          <Text strong style={{ marginLeft: '12px', fontSize: '18px', color: '#fff' }}>
-            Atlas Assistant
-          </Text>
-        </div>
-
-        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-          <div className={styles.userInfo}>
-            <Avatar icon={<UserOutlined />} />
-            <Text style={{ marginLeft: '8px', color: '#fff' }}>{user?.username}</Text>
+      <Sider 
+        width={260} 
+        collapsedWidth={80}
+        collapsed={collapsed}
+        theme="light" 
+        className={styles.sider}
+        trigger={null}
+      >
+        <div className={styles.siderContent}>
+          {/* Logo 区域 - 带渐变背景 */}
+          <div className={styles.siderHeader}>
+            <div className={styles.logoContainer}>
+              <div className={styles.logoIcon}>
+                <RobotOutlined />
+              </div>
+              {!collapsed && (
+                <div className={styles.logoInfo}>
+                  <Text strong className={styles.logoText}>
+                    Atlas
+                  </Text>
+                  <Text className={styles.logoSubtext}>
+                    智能助手平台
+                  </Text>
+                </div>
+              )}
+            </div>
           </div>
-        </Dropdown>
-      </Header>
+
+          {/* 折叠按钮 */}
+          <div className={styles.collapseBtnContainer}>
+            <div className={styles.collapseBtn} onClick={() => setCollapsed(!collapsed)}>
+              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </div>
+          </div>
+
+          {/* 菜单区域 */}
+          <div className={styles.menuContainer}>
+            {!collapsed && <div className={styles.menuTitle}>主要功能</div>}
+            <Menu
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={menuItems}
+              onClick={({ key }) => navigate(key)}
+              className={styles.menu}
+              inlineCollapsed={collapsed}
+            />
+          </div>
+
+          {/* 底部信息 */}
+          <div className={styles.siderFooter}>
+            {!collapsed ? (
+              <div className={styles.footerCard}>
+                <div className={styles.versionInfo}>
+                  <Text className={styles.versionLabel}>当前版本</Text>
+                  <Text className={styles.versionNumber}>v1.0.0</Text>
+                </div>
+                <div className={styles.userStats}>
+                  <div className={styles.statItem}>
+                    <MessageOutlined className={styles.statIcon} />
+                    <Text className={styles.statText}>今日对话 12</Text>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.footerCollapsed}>
+                <div className={styles.versionDot} />
+              </div>
+            )}
+          </div>
+        </div>
+      </Sider>
 
       <Layout>
-        <Sider width={200} theme="light" className={styles.sider}>
-          <Menu
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={menuItems}
-            onClick={({ key }) => navigate(key)}
-          />
-        </Sider>
+        <Header className={styles.header}>
+          <div className={styles.headerLeft}>
+            <Text strong className={styles.pageTitle}>
+              {menuItems.find(item => item.key === location.pathname)?.label || 'Atlas Assistant'}
+            </Text>
+          </div>
+
+          <div className={styles.headerRight}>
+            <Tooltip title="通知">
+              <Badge count={0} dot offset={[-5, 5]}>
+                <div className={styles.headerIcon}>
+                  <BellOutlined />
+                </div>
+              </Badge>
+            </Tooltip>
+
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <div className={styles.userInfo}>
+                <Avatar 
+                  icon={<UserOutlined />} 
+                  className={styles.avatar}
+                  style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
+                />
+                {!collapsed && <Text className={styles.username}>{user?.username}</Text>}
+              </div>
+            </Dropdown>
+          </div>
+        </Header>
 
         <Content className={styles.content}>
           <Outlet />

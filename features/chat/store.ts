@@ -80,7 +80,7 @@ export const useChatStore = create<ChatState>((set) => ({
 
   deleteMessage: async (conversationId, messageId) => {
     try {
-      await chatApi.deleteMessage(messageId);
+      await chatApi.deleteMessage(conversationId, messageId);
       set((state) => ({
         messages: {
           ...state.messages,

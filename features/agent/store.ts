@@ -104,17 +104,14 @@ export const useAgentStore = create<AgentState>((set) => ({
   },
 
   deleteAgent: async (agentName) => {
-    console.log('[Agent Store] 开始删除:', agentName);
     set({ loading: true });
     try {
       await agentApi.delete(agentName);
-      console.log('[Agent Store] API 删除成功:', agentName);
       set((state) => ({
         agents: state.agents.filter((agent) => agent.name !== agentName),
         currentAgent: state.currentAgent?.name === agentName ? null : state.currentAgent,
         loading: false,
       }));
-      console.log('[Agent Store] State 更新成功');
     } catch (error) {
       console.error('[Agent Store] 删除智能体失败:', error);
       set({ loading: false });

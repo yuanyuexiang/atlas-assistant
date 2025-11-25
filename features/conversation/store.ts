@@ -109,11 +109,9 @@ export const useConversationStore = create<ConversationState>((set) => ({
   },
 
   deleteConversation: async (conversationId) => {
-    console.log('[Conversation Store] 开始删除:', conversationId);
     set({ loading: true });
     try {
       await conversationApi.delete(conversationId);
-      console.log('[Conversation Store] API 删除成功:', conversationId);
       set((state) => ({
         conversations: state.conversations.filter((conv) => conv.id !== conversationId),
         currentConversation: state.currentConversation?.id === conversationId 
@@ -121,10 +119,22 @@ export const useConversationStore = create<ConversationState>((set) => ({
           : state.currentConversation,
         loading: false,
       }));
-      console.log('[Conversation Store] State 更新成功');
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Conversation Store] 删除客服失败:', error);
-      set({ loading: false });
+      
+      // 如果是 404，说明客服已经不存在，从列表中移除
+      if (error.response?.status === 404) {
+        set((state) => ({
+          conversations: state.conversations.filter((conv) => conv.id !== conversationId),
+          currentConversation: state.currentConversation?.id === conversationId 
+            ? null 
+            : state.currentConversation,
+          loading: false,
+        }));
+      } else {
+        set({ loading: false });
+      }
+      
       throw error;
     }
   },

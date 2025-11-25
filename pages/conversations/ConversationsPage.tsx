@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, message } from 'antd';
+import { App } from 'antd';
 import { ConversationList } from '@/features/conversation/components/ConversationList';
 import { ConversationForm } from '@/features/conversation/components/ConversationForm';
 import { AgentSwitcher } from '@/features/conversation/components/AgentSwitcher';
@@ -12,6 +12,7 @@ export default function ConversationsPage() {
   const [editingConversation, setEditingConversation] = useState<Conversation | null>(null);
   const [switchingConversation, setSwitchingConversation] = useState<Conversation | null>(null);
   const { deleteConversation, fetchConversations } = useConversation();
+  const { modal, message } = App.useApp();
 
   const handleCreate = () => {
     setEditingConversation(null);
@@ -24,7 +25,7 @@ export default function ConversationsPage() {
   };
 
   const handleDelete = (conversation: Conversation) => {
-    Modal.confirm({
+    modal.confirm({
       title: '确认删除',
       content: (
         <>
@@ -48,12 +49,17 @@ export default function ConversationsPage() {
         try {
           await deleteConversation(conversation.id);
           message.success('客服删除成功');
-          // 刷新列表
-          await fetchConversations();
         } catch (error: any) {
           console.error('删除失败:', error);
-          const errorMsg = error.response?.data?.detail || error.message || '删除失败';
-          message.error(errorMsg);
+          console.error('错误详情:', error.response?.data);
+          
+          // 404 表示客服已经不存在了（store 已经处理了列表更新）
+          if (error.response?.status === 404) {
+            message.warning('该客服已不存在，可能已被删除');
+          } else {
+            const errorMsg = error.response?.data?.detail || error.message || '删除失败';
+            message.error(errorMsg);
+          }
         }
       },
     });
