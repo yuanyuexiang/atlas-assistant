@@ -5,9 +5,8 @@ import {
 } from 'antd';
 import { 
   CloudUploadOutlined, DeleteOutlined, ReloadOutlined, 
-  FileTextOutlined, MoreOutlined, ClearOutlined, 
-  SyncOutlined, DownloadOutlined,
-  FolderOpenOutlined, FileOutlined, DatabaseOutlined,
+  FileTextOutlined, MoreOutlined, SyncOutlined, DownloadOutlined, ClearOutlined,
+  FileOutlined, DatabaseOutlined,
   CheckCircleOutlined
 } from '@ant-design/icons';
 import type { UploadProps, MenuProps, TableColumnsType } from 'antd';
@@ -41,7 +40,6 @@ export const KnowledgePage = () => {
 
   const [selectedAgentName, setSelectedAgentName] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all');
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   // 获取选中的智能体对象
@@ -238,7 +236,7 @@ export const KnowledgePage = () => {
   };
 
   // 下载文件
-  const handleDownload = (file: DocumentInfo) => {
+  const handleDownload = (_file: DocumentInfo) => {
     // TODO: 实现文件下载功能
     message.info('文件下载功能开发中');
   };
@@ -267,11 +265,6 @@ export const KnowledgePage = () => {
     // 搜索过滤
     if (searchQuery && !file.filename.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
-    }
-    // 类型过滤
-    if (fileTypeFilter !== 'all') {
-      const ext = file.filename.split('.').pop()?.toLowerCase();
-      if (ext !== fileTypeFilter) return false;
     }
     return true;
   });

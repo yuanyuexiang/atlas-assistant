@@ -1,6 +1,6 @@
 import { useKnowledgeStore } from '../store';
 
-export const useKnowledge = (agentName?: string) => {
+export const useKnowledge = () => {
   const {
     files,
     loading,
