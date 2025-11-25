@@ -118,16 +118,8 @@ export const MainLayout = () => {
             </div>
           </div>
 
-          {/* 折叠按钮 */}
-          <div className={styles.collapseBtnContainer}>
-            <div className={styles.collapseBtn} onClick={() => setCollapsed(!collapsed)}>
-              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            </div>
-          </div>
-
           {/* 菜单区域 */}
           <div className={styles.menuContainer}>
-            {!collapsed && <div className={styles.menuTitle}>主要功能</div>}
             <Menu
               mode="inline"
               selectedKeys={[location.pathname]}
@@ -159,6 +151,11 @@ export const MainLayout = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* 折叠触发按钮 - 悬浮在侧边栏右边缘 */}
+        <div className={styles.collapseTrigger} onClick={() => setCollapsed(!collapsed)}>
+          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </div>
       </Sider>
 
