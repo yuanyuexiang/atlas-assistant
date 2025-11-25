@@ -45,6 +45,12 @@ http.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response) {
       const { status, data } = error.response;
+      const config = error.config as any;
+      
+      // 如果请求配置中设置了 skipErrorHandler，则跳过全局错误处理
+      if (config?.skipErrorHandler) {
+        return Promise.reject(error);
+      }
       
       switch (status) {
         case 401:
@@ -64,7 +70,7 @@ http.interceptors.response.use(
           message.error('没有权限访问');
           break;
         case 404:
-          message.error('请求的资源不存在');
+          // 404 错误由组件自己处理，不显示全局提示
           break;
         case 500:
           message.error('服务器错误，请稍后重试');

@@ -69,11 +69,18 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
       onClose();
       onSuccess?.();
     } catch (error: any) {
-      console.error('提交失败:', error);
-      // 显示错误信息
-      const errorMsg = error.response?.data?.detail || error.message || '操作失败，请重试';
-      message.error(errorMsg);
-      // 不关闭对话框，让用户可以修改后重试
+      // 处理404错误：客服不存在
+      if (error.response?.status === 404) {
+        message.error('客服不存在或已被删除，列表将自动刷新');
+        // 关闭对话框并刷新列表
+        form.resetFields();
+        onClose();
+        onSuccess?.(); // 这会触发列表刷新
+      } else {
+        // 其他错误，显示错误信息，不关闭对话框
+        const errorMsg = error.response?.data?.detail || error.message || '操作失败，请重试';
+        message.error(errorMsg);
+      }
     } finally {
       setLoading(false);
     }

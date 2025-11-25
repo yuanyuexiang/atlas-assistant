@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { App } from 'antd';
 import { ConversationList } from '@/features/conversation/components/ConversationList';
 import { ConversationForm } from '@/features/conversation/components/ConversationForm';
@@ -11,8 +11,9 @@ export default function ConversationsPage() {
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [editingConversation, setEditingConversation] = useState<Conversation | null>(null);
   const [switchingConversation, setSwitchingConversation] = useState<Conversation | null>(null);
-  const { deleteConversation, fetchConversations } = useConversation();
+  const { deleteConversation } = useConversation();
   const { modal, message } = App.useApp();
+  const listRefetchRef = useRef<(() => void) | null>(null);
 
   const handleCreate = () => {
     setEditingConversation(null);
@@ -20,6 +21,7 @@ export default function ConversationsPage() {
   };
 
   const handleEdit = (conversation: Conversation) => {
+    // 直接使用列表中的数据，避免重复请求导致的不一致问题
     setEditingConversation(conversation);
     setFormOpen(true);
   };
@@ -49,13 +51,12 @@ export default function ConversationsPage() {
         try {
           await deleteConversation(conversation.id);
           message.success('客服删除成功');
+          listRefetchRef.current?.(); // 刷新列表
         } catch (error: any) {
-          console.error('删除失败:', error);
-          console.error('错误详情:', error.response?.data);
-          
-          // 404 表示客服已经不存在了（store 已经处理了列表更新）
+          // 404 表示客服已经不存在了
           if (error.response?.status === 404) {
             message.warning('该客服已不存在，可能已被删除');
+            listRefetchRef.current?.(); // 刷新列表
           } else {
             const errorMsg = error.response?.data?.detail || error.message || '删除失败';
             message.error(errorMsg);
@@ -66,6 +67,7 @@ export default function ConversationsPage() {
   };
 
   const handleSwitchAgent = (conversation: Conversation) => {
+    // 直接使用列表中的数据
     setSwitchingConversation(conversation);
     setSwitcherOpen(true);
   };
@@ -77,6 +79,9 @@ export default function ConversationsPage() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onSwitchAgent={handleSwitchAgent}
+        onRefetchReady={(refetch) => {
+          listRefetchRef.current = refetch;
+        }}
       />
 
       <ConversationForm
@@ -87,7 +92,7 @@ export default function ConversationsPage() {
           setEditingConversation(null);
         }}
         onSuccess={() => {
-          fetchConversations();
+          listRefetchRef.current?.();
         }}
       />
 
@@ -99,7 +104,7 @@ export default function ConversationsPage() {
           setSwitchingConversation(null);
         }}
         onSuccess={() => {
-          fetchConversations();
+          listRefetchRef.current?.();
         }}
       />
     </>

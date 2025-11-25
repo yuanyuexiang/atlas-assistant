@@ -14,7 +14,7 @@ interface ConversationState {
   }) => Promise<void>;
   
   // 获取客服详情
-  fetchConversation: (conversationId: string) => Promise<void>;
+  fetchConversation: (conversationId: string) => Promise<Conversation>;
   
   // 创建客服
   createConversation: (params: {
@@ -65,6 +65,7 @@ export const useConversationStore = create<ConversationState>((set) => ({
     try {
       const conversation = await conversationApi.get(conversationId);
       set({ currentConversation: conversation, loading: false });
+      return conversation; // 返回数据供调用方使用
     } catch (error) {
       console.error('获取客服详情失败:', error);
       set({ loading: false });
@@ -101,9 +102,23 @@ export const useConversationStore = create<ConversationState>((set) => ({
           : state.currentConversation,
         loading: false,
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('更新客服失败:', error);
-      set({ loading: false });
+      
+      // 如果是 404，说明客服已经不存在，从列表中移除
+      if (error.response?.status === 404) {
+        console.warn('客服不存在，从列表中移除:', conversationId);
+        set((state) => ({
+          conversations: state.conversations.filter((conv) => conv.id !== conversationId),
+          currentConversation: state.currentConversation?.id === conversationId 
+            ? null 
+            : state.currentConversation,
+          loading: false,
+        }));
+      } else {
+        set({ loading: false });
+      }
+      
       throw error;
     }
   },
@@ -154,9 +169,23 @@ export const useConversationStore = create<ConversationState>((set) => ({
           : state.currentConversation,
         loading: false,
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('切换智能体失败:', error);
-      set({ loading: false });
+      
+      // 如果是 404，说明客服已经不存在，从列表中移除
+      if (error.response?.status === 404) {
+        console.warn('客服不存在，从列表中移除:', conversationId);
+        set((state) => ({
+          conversations: state.conversations.filter((conv) => conv.id !== conversationId),
+          currentConversation: state.currentConversation?.id === conversationId 
+            ? null 
+            : state.currentConversation,
+          loading: false,
+        }));
+      } else {
+        set({ loading: false });
+      }
+      
       throw error;
     }
   },

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Row, Col, Empty, Space, Input, Select, Button, Skeleton, Card } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { ConversationCard } from './ConversationCard';
 import { useConversationList } from '../hooks/useConversation';
 import { useDebounce } from '@/lib/hooks/useDebounce';
@@ -13,21 +13,28 @@ interface ConversationListProps {
   onDelete?: (conversation: Conversation) => void;
   onCreate?: () => void;
   onSwitchAgent?: (conversation: Conversation) => void;
+  onRefetchReady?: (refetch: () => void) => void;
 }
 
 export const ConversationList = ({ 
   onEdit, 
   onDelete, 
   onCreate,
-  onSwitchAgent 
+  onSwitchAgent,
+  onRefetchReady
 }: ConversationListProps) => {
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | undefined>();
 
   const debouncedSearch = useDebounce(searchText, 300);
-  const { conversations, loading } = useConversationList({
+  const { conversations, loading, refetch } = useConversationList({
     status: statusFilter,
   });
+
+  // 将refetch方法传递给父组件
+  React.useEffect(() => {
+    onRefetchReady?.(refetch);
+  }, [refetch, onRefetchReady]);
 
   // 确保 conversations 是数组（处理后端可能返回对象的情况）
   const conversationsArray = Array.isArray(conversations) ? conversations : [];
@@ -75,13 +82,22 @@ export const ConversationList = ({
             </Select>
           </Space>
 
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={onCreate}
-          >
-            创建客服
-          </Button>
+          <Space size="middle">
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={refetch}
+              loading={loading}
+            >
+              刷新
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={onCreate}
+            >
+              创建客服
+            </Button>
+          </Space>
         </Space>
       </div>
 
