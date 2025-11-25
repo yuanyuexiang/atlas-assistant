@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Modal, Form, Input, Select, message } from 'antd';
+import { Modal, Form, Input, Select, App } from 'antd';
 import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { useConversation } from '../hooks/useConversation';
 import { useAgentList } from '@/features/agent/hooks/useAgent';
@@ -18,12 +18,20 @@ interface ConversationFormProps {
 export const ConversationForm = ({ open, conversation, onClose, onSuccess }: ConversationFormProps) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
   const { createConversation, updateConversation, switchAgent } = useConversation();
-  const { agents } = useAgentList({ status: 'active' }); // 只显示活跃的智能体
+  // 编辑时获取所有智能体，创建时只获取活跃的
+  const { agents } = useAgentList({ status: conversation ? undefined : 'active' });
   const isEdit = !!conversation;
 
   useEffect(() => {
     if (open && conversation) {
+      console.log('ConversationForm - 设置表单值:', {
+        conversation,
+        agent_name: conversation.agent_name,
+        agents: agents.map(a => ({ name: a.name, display_name: a.display_name }))
+      });
+      
       form.setFieldsValue({
         name: conversation.name,
         display_name: conversation.display_name,
@@ -34,7 +42,7 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
     } else if (open) {
       form.resetFields();
     }
-  }, [open, conversation, form]);
+  }, [open, conversation, form, agents]);
 
   const handleSubmit = async () => {
     try {
@@ -72,10 +80,9 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
       // 处理404错误：客服不存在
       if (error.response?.status === 404) {
         message.error('客服不存在或已被删除，列表将自动刷新');
-        // 关闭对话框并刷新列表
         form.resetFields();
         onClose();
-        onSuccess?.(); // 这会触发列表刷新
+        onSuccess?.();
       } else {
         // 其他错误，显示错误信息，不关闭对话框
         const errorMsg = error.response?.data?.detail || error.message || '操作失败，请重试';
@@ -129,7 +136,7 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
           label="关联智能体"
           name="agent_name"
           rules={[{ required: true, message: '请选择关联的智能体' }]}
-          extra={isEdit ? '修改智能体将自动调用切换功能' : '请选择一个活跃的智能体'}
+          extra={isEdit ? '修改智能体将自动调用切换功能' : '只能选择活跃状态的智能体'}
         >
           <Select 
             placeholder="选择智能体" 
@@ -138,11 +145,18 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
             suffixIcon={<RobotOutlined />}
           >
             {agents.map((agent) => (
-              <Select.Option key={agent.name} value={agent.name}>
+              <Select.Option 
+                key={agent.name} 
+                value={agent.name}
+                disabled={!isEdit && agent.status !== 'active'} // 创建时禁用非活跃智能体
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <RobotOutlined style={{ color: '#667eea' }} />
+                  <RobotOutlined style={{ color: agent.status === 'active' ? '#667eea' : '#999' }} />
                   <span>{agent.display_name}</span>
-                  <span style={{ color: '#999', fontSize: '12px' }}>({agent.name})</span>
+                  <span style={{ color: '#999', fontSize: '12px' }}>
+                    ({agent.name})
+                    {agent.status !== 'active' && <span style={{ color: '#faad14' }}> - {agent.status}</span>}
+                  </span>
                 </div>
               </Select.Option>
             ))}

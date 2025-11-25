@@ -36,10 +36,10 @@ export const ConversationList = ({
     onRefetchReady?.(refetch);
   }, [refetch, onRefetchReady]);
 
-  // 确保 conversations 是数组（处理后端可能返回对象的情况）
+  // 确保 conversations 是数组
   const conversationsArray = Array.isArray(conversations) ? conversations : [];
 
-  // 前端搜索过滤（后端不支持搜索参数）
+  // 前端搜索过滤
   const filteredConversations = conversationsArray.filter((conversation) => {
     if (!debouncedSearch) return true;
     const searchLower = debouncedSearch.toLowerCase();

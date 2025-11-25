@@ -53,8 +53,16 @@ export default function ConversationsPage() {
           message.success('客服删除成功');
           listRefetchRef.current?.(); // 刷新列表
         } catch (error: any) {
-          // 404 表示客服已经不存在了
-          if (error.response?.status === 404) {
+          console.error('删除客服失败:', {
+            conversationId: conversation.id,
+            conversationName: conversation.name,
+            messageCount: conversation.message_count,
+            error: error.response?.data
+          });
+          
+          if (error.response?.status === 500) {
+            message.error('删除失败：服务器内部错误，可能是因为有关联数据未正确处理，请联系管理员');
+          } else if (error.response?.status === 404) {
             message.warning('该客服已不存在，可能已被删除');
             listRefetchRef.current?.(); // 刷新列表
           } else {

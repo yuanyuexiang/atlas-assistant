@@ -36,16 +36,35 @@ export const conversationApi = {
   // 获取客服列表
   list: async (params: ConversationListParams = {}) => {
     const response = await get<any>('/conversations', { params });
+    let conversations = [];
+    
     // 处理可能的对象格式返回
     if (response && typeof response === 'object' && 'conversations' in response) {
-      return response.conversations as Conversation[];
+      conversations = response.conversations;
+    } else if (Array.isArray(response)) {
+      conversations = response;
     }
-    return Array.isArray(response) ? response : [];
+    
+    // 转换数据格式：将嵌套的 agent 对象展开
+    return conversations.map((conv: any) => ({
+      ...conv,
+      agent_name: conv.agent?.name || conv.agent_name,
+      agent_display_name: conv.agent?.display_name || conv.agent_display_name,
+      agent_id: conv.agent?.id || conv.agent_id,
+    })) as Conversation[];
   },
 
   // 获取客服详情
-  get: (conversationId: string) =>
-    get<Conversation>(`/conversations/${conversationId}`),
+  get: async (conversationId: string) => {
+    const response = await get<any>(`/conversations/${conversationId}`);
+    // 转换数据格式
+    return {
+      ...response,
+      agent_name: response.agent?.name || response.agent_name,
+      agent_display_name: response.agent?.display_name || response.agent_display_name,
+      agent_id: response.agent?.id || response.agent_id,
+    } as Conversation;
+  },
 
   // 更新客服
   update: (conversationId: string, params: UpdateConversationParams) =>
