@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Form, Input, Select, message } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, RobotOutlined } from '@ant-design/icons';
 import { useConversation } from '../hooks/useConversation';
 import { useAgentList } from '@/features/agent/hooks/useAgent';
 import type { Conversation } from '@/types/models';
@@ -102,25 +102,65 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
           <Input placeholder="例如: 客服小美" />
         </Form.Item>
 
-        <Form.Item
-          label="关联智能体"
-          name="agent_name"
-          rules={[{ required: true, message: '请选择关联的智能体' }]}
-          extra={isEdit ? '智能体只能通过"切换智能体"功能更改' : '请选择一个活跃的智能体'}
-        >
-          <Select 
-            placeholder="选择智能体" 
-            disabled={isEdit}
-            showSearch
-            optionFilterProp="children"
+        {!isEdit && (
+          <Form.Item
+            label="关联智能体"
+            name="agent_name"
+            rules={[{ required: true, message: '请选择关联的智能体' }]}
+            extra="请选择一个活跃的智能体"
           >
-            {agents.map((agent) => (
-              <Select.Option key={agent.name} value={agent.name}>
-                {agent.display_name} ({agent.name})
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Select 
+              placeholder="选择智能体" 
+              showSearch
+              optionFilterProp="children"
+            >
+              {agents.map((agent) => (
+                <Select.Option key={agent.name} value={agent.name}>
+                  {agent.display_name} ({agent.name})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
+
+        {isEdit && conversation && (
+          <Form.Item
+            label="当前关联智能体"
+            extra='如需更换智能体，请点击卡片上的"切换智能体"按钮'
+          >
+            <div style={{ 
+              padding: '12px 16px',
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
+              borderRadius: '12px',
+              border: '2px solid rgba(102, 126, 234, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '20px'
+              }}>
+                <RobotOutlined />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: '#333', marginBottom: '2px' }}>
+                  {conversation.agent_display_name}
+                </div>
+                <div style={{ fontSize: '13px', color: '#999' }}>
+                  {conversation.agent_name}
+                </div>
+              </div>
+            </div>
+          </Form.Item>
+        )}
 
         {isEdit && (
           <Form.Item

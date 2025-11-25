@@ -109,9 +109,9 @@ export const ConversationList = ({
             )}
           </Empty>
         ) : (
-          <Row gutter={[16, 16]}>
+          <Row gutter={[20, 20]}>
             {filteredConversations.map((conversation) => (
-              <Col xs={24} sm={12} lg={8} xl={6} key={conversation.id}>
+              <Col xs={24} sm={24} md={12} lg={8} xl={8} xxl={6} key={conversation.id}>
                 <ConversationCard
                   conversation={conversation}
                   onEdit={onEdit}
