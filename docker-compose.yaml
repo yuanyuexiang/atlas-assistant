@@ -10,7 +10,7 @@ services:
       - "traefik.http.routers.atlas-assistant.rule=Host(`atlas.matrix-net.tech`)" # 替换为你的域名
       - "traefik.http.routers.atlas-assistant.entrypoints=websecure"
       - "traefik.http.routers.atlas-assistant.service=atlas-assistant"
-      - "traefik.http.routers.atlas-assistant.tls.certresolver=dnspodresolver"
+      - "traefik.http.routers.atlas-assistant.tls.certresolver=aliyunresolver"
       - "traefik.http.services.atlas-assistant.loadbalancer.server.port=3000"
 networks:
   matrix-network:
