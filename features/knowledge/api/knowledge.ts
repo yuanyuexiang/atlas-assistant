@@ -97,7 +97,7 @@ export const knowledgeApi = {
 
   // 清空智能体的知识库 (使用 agent UUID)
   clear: (agentId: string) =>
-    http.delete(`/knowledge-base/${agentId}/documents`).then(res => res.data),
+    http.delete(`/knowledge-base/${agentId}/clear`).then(res => res.data),
 
   // 重建智能体的知识库索引 (使用 agent UUID)
   rebuild: (agentId: string) =>

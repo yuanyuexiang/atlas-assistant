@@ -63,16 +63,30 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     set({ uploading: true, uploadProgress: 0 });
     try {
       const result = await knowledgeApi.upload(agentId, files);
-      console.log('[Knowledge Store] 上传成功:', result.uploaded_files.length, '个文件');
+      console.log('[Knowledge Store] 上传响应:', result);
+      
+      // 处理各种可能的返回格式
+      let uploadedFiles: DocumentInfo[] = [];
+      if (result && typeof result === 'object') {
+        if ('uploaded_files' in result && Array.isArray(result.uploaded_files)) {
+          uploadedFiles = result.uploaded_files;
+        } else if ('data' in result && Array.isArray(result.data)) {
+          uploadedFiles = result.data;
+        } else if (Array.isArray(result)) {
+          uploadedFiles = result;
+        }
+      }
+      
+      console.log('[Knowledge Store] 上传成功:', uploadedFiles.length, '个文件');
       
       // 更新文件列表
       set((state) => ({
-        files: [...state.files, ...result.uploaded_files],
+        files: [...state.files, ...uploadedFiles],
         uploading: false,
         uploadProgress: 100,
       }));
       
-      return result.uploaded_files;
+      return uploadedFiles;
     } catch (error) {
       console.error('[Knowledge Store] 上传失败:', error);
       set({ uploading: false, uploadProgress: 0 });
