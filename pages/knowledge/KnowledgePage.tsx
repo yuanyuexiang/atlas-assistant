@@ -38,30 +38,30 @@ export const KnowledgePage = () => {
     rebuildIndex,
   } = useKnowledge();
 
-  const [selectedAgentName, setSelectedAgentName] = useState<string>('');
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   // 获取选中的智能体对象
-  const selectedAgent = agents.find(a => a.name === selectedAgentName);
+  const selectedAgent = agents.find(a => a.id === selectedAgentId);
 
   // 自动选择第一个智能体
   useEffect(() => {
-    if (agents.length > 0 && !selectedAgentName) {
-      setSelectedAgentName(agents[0].name);
+    if (agents.length > 0 && !selectedAgentId) {
+      setSelectedAgentId(agents[0].id);
     }
-  }, [agents, selectedAgentName]);
+  }, [agents, selectedAgentId]);
 
   // 当选中智能体时，加载其知识库文件
   useEffect(() => {
-    if (selectedAgentName) {
-      fetchFiles(selectedAgentName).catch(error => {
+    if (selectedAgentId) {
+      fetchFiles(selectedAgentId).catch(error => {
         if (error.response?.status !== 404) {
           console.error('[KnowledgePage] 加载失败:', error);
         }
       });
     }
-  }, [selectedAgentName, fetchFiles]);
+  }, [selectedAgentId, fetchFiles]);
 
   // 格式化文件大小
   const formatFileSize = (sizeMB: number): string => {
@@ -99,13 +99,13 @@ export const KnowledgePage = () => {
 
   // 上传文件处理
   const handleUpload = async (fileList: File[]) => {
-    if (!selectedAgentName) {
+    if (!selectedAgentId) {
       message.error('请先选择智能体');
       return;
     }
 
     try {
-      await uploadFiles(selectedAgentName, fileList);
+      await uploadFiles(selectedAgentId, fileList);
       message.success(`成功上传 ${fileList.length} 个文件`);
     } catch (error: any) {
       message.error(error.response?.data?.detail || '文件上传失败');
@@ -114,7 +114,7 @@ export const KnowledgePage = () => {
 
   // 删除单个文件
   const handleDelete = (filename: string) => {
-    if (!selectedAgentName) {
+    if (!selectedAgentId) {
       message.error('请先选择智能体');
       return;
     }
@@ -127,7 +127,7 @@ export const KnowledgePage = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await deleteFile(selectedAgentName, filename);
+          await deleteFile(selectedAgentId, filename);
           message.success('文件已删除');
           setSelectedRowKeys(prev => prev.filter(key => key !== filename));
         } catch (error: any) {
@@ -139,7 +139,7 @@ export const KnowledgePage = () => {
 
   // 批量删除
   const handleBatchDelete = () => {
-    if (!selectedAgentName || selectedRowKeys.length === 0) return;
+    if (!selectedAgentId || selectedRowKeys.length === 0) return;
 
     modal.confirm({
       title: '批量删除',
@@ -151,7 +151,7 @@ export const KnowledgePage = () => {
         try {
           await Promise.all(
             selectedRowKeys.map(key => 
-              deleteFile(selectedAgentName, key as string)
+              deleteFile(selectedAgentId, key as string)
             )
           );
           message.success(`已删除 ${selectedRowKeys.length} 个文件`);
@@ -165,7 +165,7 @@ export const KnowledgePage = () => {
 
   // 清空知识库
   const handleClearAll = () => {
-    if (!selectedAgentName || files.length === 0) return;
+    if (!selectedAgentId || files.length === 0) return;
 
     modal.confirm({
       title: '清空知识库',
@@ -183,7 +183,7 @@ export const KnowledgePage = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await clearKnowledge(selectedAgentName);
+          await clearKnowledge(selectedAgentId);
           message.success('知识库已清空');
           setSelectedRowKeys([]);
         } catch (error: any) {
@@ -195,7 +195,7 @@ export const KnowledgePage = () => {
 
   // 重建索引
   const handleRebuildIndex = () => {
-    if (!selectedAgentName) return;
+    if (!selectedAgentId) return;
 
     modal.confirm({
       title: '重建向量索引',
@@ -216,7 +216,7 @@ export const KnowledgePage = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await rebuildIndex(selectedAgentName);
+          await rebuildIndex(selectedAgentId);
           message.success('索引重建任务已启动');
         } catch (error: any) {
           message.error(error.response?.data?.detail || '重建失败');
@@ -227,11 +227,11 @@ export const KnowledgePage = () => {
 
   // 刷新文件列表
   const handleRefresh = async () => {
-    if (!selectedAgentName) {
+    if (!selectedAgentId) {
       message.warning('请先选择智能体');
       return;
     }
-    await fetchFiles(selectedAgentName);
+    await fetchFiles(selectedAgentId);
     message.success('刷新成功');
   };
 
@@ -454,17 +454,17 @@ export const KnowledgePage = () => {
         <div className={styles.agentSelector}>
           <DatabaseOutlined className={styles.agentIcon} />
           <Select
-            value={selectedAgentName}
-            onChange={setSelectedAgentName}
+            value={selectedAgentId}
+            onChange={setSelectedAgentId}
             className={styles.agentSelect}
             placeholder="选择智能体"
             size="large"
           >
             {agents.map((agent: Agent) => (
-              <Select.Option key={agent.name} value={agent.name}>
+              <Select.Option key={agent.id} value={agent.id}>
                 <Space>
                   <span>{agent.display_name}</span>
-                  {selectedAgentName === agent.name && files.length > 0 && (
+                  {selectedAgentId === agent.id && files.length > 0 && (
                     <Tag color="blue">{files.length} 个文件</Tag>
                   )}
                 </Space>
@@ -477,7 +477,7 @@ export const KnowledgePage = () => {
           <Button
             icon={<ReloadOutlined />}
             onClick={handleRefresh}
-            disabled={!selectedAgentName || loading}
+            disabled={!selectedAgentId || loading}
             size="large"
           >
             刷新
@@ -485,7 +485,7 @@ export const KnowledgePage = () => {
           <Button
             icon={<SyncOutlined />}
             onClick={handleRebuildIndex}
-            disabled={!selectedAgentName || files.length === 0}
+            disabled={!selectedAgentId || files.length === 0}
             size="large"
           >
             重建索引
@@ -494,7 +494,7 @@ export const KnowledgePage = () => {
             danger
             icon={<ClearOutlined />}
             onClick={handleClearAll}
-            disabled={!selectedAgentName || files.length === 0}
+            disabled={!selectedAgentId || files.length === 0}
             size="large"
           >
             清空知识库
@@ -562,7 +562,7 @@ export const KnowledgePage = () => {
 
         {/* 上传区域（紧凑型） */}
         <div className={styles.uploadArea}>
-          <Dragger {...uploadProps} disabled={!selectedAgentName || uploading} className={styles.compactDragger}>
+          <Dragger {...uploadProps} disabled={!selectedAgentId || uploading} className={styles.compactDragger}>
             <div className={styles.uploadContent}>
               <CloudUploadOutlined className={styles.uploadIcon} />
               <div className={styles.uploadText}>

@@ -5,6 +5,11 @@
 > - 本地开发: `http://localhost:8000/atlas/api/*`  
 > 详细说明请查看 [根路径配置说明](ROOT_PATH_GUIDE.md)
 
+> 🚀 **API UUID 迁移（2025-11-28）**: 所有实体的 CRUD 接口已统一改为使用 UUID 作为路径参数  
+> - **重要变更**: 路径参数从 `{entity_name}` 改为 `{entity_id}` (UUID)  
+> - **影响范围**: Agent、Conversation、Knowledge Base、Chat 共 24 个接口  
+> - **详细指南**: 请查看 [API UUID 迁移指南](API_UUID_MIGRATION.md)
+
 ## 📋 目录
 
 - [系统概述](#系统概述)
@@ -176,6 +181,42 @@ Authorization: Bearer {token}
 
 ---
 
+## ⚠️ 最新更新（2025-11-28）
+
+### 接口变更说明
+
+**1. 列表接口返回格式变更** ✅
+- **影响接口**: `GET /agents` 和 `GET /conversations`
+- **变更**: 直接返回数组而不是分页对象
+- **前端影响**: 如果之前处理的是数组格式，无需修改
+```javascript
+// 现在的响应
+const agents = await response.json();  // 直接是数组
+
+// 之前如果是这样处理的（需要修改）
+const { agents, total } = await response.json();
+```
+
+**2. 客服更新接口新增字段** 🆕
+- **影响接口**: `PUT /conversations/{id}`
+- **新增**: `agent_name` 可选字段，用于更换智能体
+- **前端影响**: 如需支持"更换智能体"功能，可添加此字段
+```javascript
+// 新功能：更新时同时更换智能体
+await updateConversation({
+  display_name: "新名称",
+  agent_name: "new-agent"  // 可选
+});
+```
+
+**3. 知识库功能修复** ✅
+- 修复了文件上传后 chunks_count 为 0 的问题
+- 修复了文件名带智能体前缀的问题
+- 优化了空知识库的友好提示
+- **前端影响**: 无需修改，功能更稳定
+
+---
+
 ## API 接口文档
 
 ### 基础信息
@@ -319,19 +360,39 @@ Authorization: Bearer {token}
 - `skip`: 跳过记录数（分页）
 - `limit`: 返回记录数（最大 1000）
 
+**响应格式**：直接返回数组
+```json
+[
+  {
+    "id": "agent_uuid",
+    "name": "customer-service",
+    "display_name": "智能客服",
+    "agent_type": "general",
+    "status": "active",
+    ...
+  }
+]
+```
+
+> ⚠️ **注意**: 接口直接返回数组，不是分页对象 `{items: [...], total: ...}`
+
 ### 2.3 获取智能体详情
 
 ```http
-GET https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
+GET https://atlas.matrix-net.tech/atlas/api/agents/{agent_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID，从列表接口或创建接口获取
 
 ### 2.4 更新智能体
 
 ```http
-PUT https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
+PUT https://atlas.matrix-net.tech/atlas/api/agents/{agent_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **请求体**：
 ```json
@@ -346,9 +407,11 @@ Authorization: Bearer {token}
 ### 2.5 删除智能体
 
 ```http
-DELETE https://atlas.matrix-net.tech/atlas/api/agents/{agent_name}
+DELETE https://atlas.matrix-net.tech/atlas/api/agents/{agent_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **注意**：删除智能体会同时删除其知识库（Milvus collection）。
 
@@ -408,44 +471,92 @@ Authorization: Bearer {token}
 - `skip`: 跳过记录数
 - `limit`: 返回记录数
 
+**响应格式**：直接返回数组
+```json
+[
+  {
+    "id": "conversation_uuid",
+    "name": "xiaoli",
+    "display_name": "小李",
+    "status": "online",
+    ...
+  }
+]
+```
+
+> ⚠️ **注意**: 接口直接返回数组，不是分页对象
+
 ### 3.3 获取客服详情
 
 ```http
-GET https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
+GET https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 ### 3.4 更新客服
 
 ```http
-PUT https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
+PUT https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 **请求体**：
 ```json
 {
   "display_name": "新名称",         // 可选
   "avatar": "🤖",                  // 可选
+  "agent_name": "new-agent",       // 🆕 可选：更换关联的智能体
   "status": "online",              // 可选：online/offline/busy
   "welcome_message": "新欢迎语",    // 可选
   "description": "新描述"           // 可选
 }
 ```
 
+**新增功能说明**：
+- `agent_name` 字段用于更换客服关联的智能体
+- 支持传入智能体的 `name` 或 `id` (UUID)
+- 如果不传此字段，保留原有智能体关联
+- 这是除了 `switch-agent` 接口外的另一种切换智能体的方式
+
+**使用示例**：
+```javascript
+// 只修改显示名称，保留原有智能体
+await fetch('/api/conversations/xiaoli', {
+  method: 'PUT',
+  body: JSON.stringify({ display_name: '小李 - 白班' })
+});
+
+// 同时修改名称和切换智能体
+await fetch('/api/conversations/xiaoli', {
+  method: 'PUT',
+  body: JSON.stringify({ 
+    display_name: '小李 - 夜班',
+    agent_name: 'night-shift-agent'
+  })
+});
+```
+
 ### 3.5 删除客服
 
 ```http
-DELETE https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}
+DELETE https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 ### 3.6 切换智能体
 
 ```http
-POST https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_name}/switch-agent
+POST https://atlas.matrix-net.tech/atlas/api/conversations/{conversation_id}/switch-agent
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 **请求体**：
 ```json
@@ -474,15 +585,18 @@ Authorization: Bearer {token}
 
 ## 4. 知识库管理 `/api/knowledge-base`
 
-> ✅ **功能状态**: 已测试验证，所有接口正常工作（2025-01-21）
+> ✅ **功能状态**: 已测试验证，所有接口正常工作（2025-11-28 更新）
+> 🔧 **最近修复**: 修复了向量化失败导致 chunks_count 为 0 的问题
 
 ### 4.1 上传文档
 
 ```http
-POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents
+POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/documents
 Authorization: Bearer {token}
 Content-Type: multipart/form-data
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **请求体**（FormData）：
 ```javascript
@@ -516,13 +630,21 @@ fetch('https://atlas.matrix-net.tech/atlas/api/knowledge-base/customer-service/d
 - ⚠️ 新创建的智能体需要等待 Milvus 初始化 collection（约 1-3 秒）
 - ✅ 上传后文档会自动进行文本切分和向量化
 - 📊 可通过统计接口查看处理进度
+- 🔧 已修复：文件名不再有智能体前缀污染（使用短 UUID）
+- 🔧 已修复：向量化失败问题（API 配置和错误处理优化）
+
+**文件名格式**：
+- 之前：`test_agent_1763997087284_document.txt`（带 agent 前缀）
+- 现在：`a1b2c3d4_document.txt`（短 UUID + 原始文件名）
 
 ### 4.2 获取文档列表
 
 ```http
-GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents
+GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/documents
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **响应**：
 ```json
@@ -542,9 +664,13 @@ Authorization: Bearer {token}
 ### 4.3 删除文档
 
 ```http
-DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/documents/{file_id}
+DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/documents/{file_id}
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: 
+> - `agent_id`: 智能体的 UUID
+> - `file_id`: 文档的 UUID（从列表接口获取）
 
 **响应**：
 ```json
@@ -560,9 +686,11 @@ Authorization: Bearer {token}
 ### 4.4 获取知识库统计
 
 ```http
-GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/stats
+GET https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/stats
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **响应**：
 ```json
@@ -588,16 +716,20 @@ Authorization: Bearer {token}
 ### 4.5 清空知识库
 
 ```http
-DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/clear
+DELETE https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/clear
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 ### 4.6 重建知识库
 
 ```http
-POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_name}/rebuild
+POST https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/rebuild
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `agent_id` 是智能体的 UUID
 
 **请求体**：
 ```json
@@ -615,7 +747,12 @@ Authorization: Bearer {token}
 ### 5.1 发送消息（同步响应）
 
 ```http
-POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/message
+POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_id}/message
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 Authorization: Bearer {token}
 ```
 
@@ -643,6 +780,15 @@ Authorization: Bearer {token}
 用户消息 → 获取客服关联的智能体 → 检索知识库 → LLM 生成回复 → 返回完整结果
 ```
 
+**空知识库友好提示**：
+如果智能体的知识库为空，系统会返回友好提示而不是错误信息：
+```json
+{
+  "content": "您好！我是智能客服助手。目前我的知识库还是空的，请管理员先上传相关文档，我才能更好地为您服务。",
+  "knowledge_base_used": true
+}
+```
+
 **适用场景**：
 - ✅ 短文本问答
 - ✅ 简单的 Q&A 场景
@@ -653,10 +799,12 @@ Authorization: Bearer {token}
 ### 5.2 发送消息（流式响应）⚡ 推荐
 
 ```http
-POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/message/stream
+POST https://atlas.matrix-net.tech/atlas/api/chat/{conversation_id}/message/stream
 Authorization: Bearer {token}
 Content-Type: application/json
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 **请求体**：
 ```json
@@ -942,9 +1090,11 @@ function ChatComponent() {
 ### 5.3 清空对话历史
 
 ```http
-DELETE https://atlas.matrix-net.tech/atlas/api/chat/{conversation_name}/history
+DELETE https://atlas.matrix-net.tech/atlas/api/chat/{conversation_id}/history
 Authorization: Bearer {token}
 ```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
 
 **说明**：仅清空内存中的对话历史，不影响知识库。
 
@@ -1093,11 +1243,12 @@ const agentResponse = await fetch(`${API_BASE_URL}/agents`, {
   })
 });
 
-// 3. 上传知识库文档
+// 3. 上传知识库文档（使用创建时返回的 agent ID）
 const formData = new FormData();
 formData.append('file', fileInput.files[0]);
+const agentId = agentResponse.id;  // 从步骤2获取的 UUID
 
-await fetch(`${API_BASE_URL}/knowledge-base/customer-service/documents`, {
+await fetch(`${API_BASE_URL}/knowledge-base/${agentId}/documents`, {
   method: 'POST',
   headers: { 'Authorization': `Bearer ${access_token}` },
   body: formData
@@ -1119,8 +1270,10 @@ const conversationResponse = await fetch(`${API_BASE_URL}/conversations`, {
   })
 });
 
-// 5. 发送消息
-const chatResponse = await fetch(`${API_BASE_URL}/chat/xiaoli/message`, {
+// 5. 发送消息（使用创建时返回的 conversation ID）
+const conversationId = conversationResponse.id;  // 从步骤4获取的 UUID
+
+const chatResponse = await fetch(`${API_BASE_URL}/chat/${conversationId}/message`, {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${access_token}`,
@@ -1152,14 +1305,16 @@ await createAgent({
 });
 
 // 白班时间绑定白班智能体
-await createConversation({
+const supportConv = await createConversation({
   name: 'support',
   display_name: '在线客服',
   agent_name: 'service-day'
 });
 
-// 夜班时间切换到夜班智能体
-await fetch('https://atlas.matrix-net.tech/atlas/api/conversations/support/switch-agent', {
+// 夜班时间切换到夜班智能体（使用 conversation ID）
+const conversationId = supportConv.id;  // UUID
+
+await fetch(`https://atlas.matrix-net.tech/atlas/api/conversations/${conversationId}/switch-agent`, {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${token}`,
@@ -1176,13 +1331,13 @@ await fetch('https://atlas.matrix-net.tech/atlas/api/conversations/support/switc
 
 ```javascript
 // 创建一个通用智能体
-await createAgent({
+const generalAgent = await createAgent({
   name: 'general-support',
   display_name: '通用客服智能体'
 });
 
-// 上传知识库
-await uploadDocument('general-support', 'knowledge.pdf');
+// 上传知识库（使用 agent UUID）
+await uploadDocument(generalAgent.id, 'knowledge.pdf');
 
 // 多个客服共享这个智能体
 await createConversation({
@@ -1359,7 +1514,7 @@ async function safeApiCall(apiFunction) {
 ### 3. 文件上传进度
 
 ```javascript
-async function uploadWithProgress(agentName, file, onProgress) {
+async function uploadWithProgress(agentId, file, onProgress) {
   const formData = new FormData();
   formData.append('file', file);
 
@@ -1381,14 +1536,15 @@ async function uploadWithProgress(agentName, file, onProgress) {
       }
     });
 
-    xhr.open('POST', `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${agentName}/documents`);
+    xhr.open('POST', `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${agentId}/documents`);
     xhr.setRequestHeader('Authorization', `Bearer ${token}`);
     xhr.send(formData);
   });
 }
 
-// 使用
-uploadWithProgress('customer-service', file, (percent) => {
+// 使用（agentId 是智能体的 UUID）
+const agentId = 'agent-uuid-from-list';
+uploadWithProgress(agentId, file, (percent) => {
   console.log(`上传进度: ${percent}%`);
   updateProgressBar(percent);
 });
@@ -1398,8 +1554,8 @@ uploadWithProgress('customer-service', file, (percent) => {
 
 ```javascript
 class ChatWidget {
-  constructor(conversationName, token) {
-    this.conversationName = conversationName;
+  constructor(conversationId, token) {
+    this.conversationId = conversationId;  // 客服的 UUID
     this.token = token;
     this.messages = [];
   }
@@ -1413,7 +1569,7 @@ class ChatWidget {
 
     try {
       const response = await fetch(
-        `https://atlas.matrix-net.tech/atlas/api/chat/${this.conversationName}/message`,
+        `https://atlas.matrix-net.tech/atlas/api/chat/${this.conversationId}/message`,
         {
           method: 'POST',
           headers: {
@@ -1461,8 +1617,8 @@ class ChatWidget {
 
 ```javascript
 class AgentSwitcher {
-  constructor(conversationName, token) {
-    this.conversationName = conversationName;
+  constructor(conversationId, token) {
+    this.conversationId = conversationId;  // 客服的 UUID
     this.token = token;
   }
 
@@ -1481,7 +1637,7 @@ class AgentSwitcher {
 
   async switchAgent(newAgentName, reason) {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/atlas/api/conversations/${this.conversationName}/switch-agent`,
+      `https://atlas.matrix-net.tech/atlas/api/conversations/${this.conversationId}/switch-agent`,
       {
         method: 'POST',
         headers: {
@@ -1502,7 +1658,9 @@ class AgentSwitcher {
   }
 }
 
-// 定时切换
+// 定时切换（使用 conversation UUID）
+const conversationId = 'conv-uuid-from-list';
+const switcher = new AgentSwitcher(conversationId, token);
 setInterval(() => {
   switcher.switchByTime();
 }, 60 * 60 * 1000);  // 每小时检查一次
@@ -1512,8 +1670,8 @@ setInterval(() => {
 
 ```javascript
 class KnowledgeBaseManager {
-  constructor(agentName, token) {
-    this.agentName = agentName;
+  constructor(agentId, token) {
+    this.agentId = agentId;  // 智能体的 UUID
     this.token = token;
   }
 
@@ -1546,7 +1704,7 @@ class KnowledgeBaseManager {
     formData.append('file', file);
 
     const response = await fetch(
-      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/documents`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentId}/documents`,
       {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${this.token}` },
@@ -1570,7 +1728,7 @@ class KnowledgeBaseManager {
 
   async getStats() {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/stats`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentId}/stats`,
       {
         headers: { 'Authorization': `Bearer ${this.token}` }
       }
@@ -1582,7 +1740,7 @@ class KnowledgeBaseManager {
 
   async rebuildWithFiles(fileIdsToKeep) {
     const response = await fetch(
-      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentName}/rebuild`,
+      `https://atlas.matrix-net.tech/atlas/api/knowledge-base/${this.agentId}/rebuild`,
       {
         method: 'POST',
         headers: {
@@ -1596,6 +1754,11 @@ class KnowledgeBaseManager {
     return await response.json();
   }
 }
+
+// 使用示例（agentId 是智能体的 UUID）
+const agentId = 'agent-uuid-from-list';
+const kbManager = new KnowledgeBaseManager(agentId, token);
+await kbManager.uploadMultipleFiles(files);
 ```
 
 ---
@@ -1609,6 +1772,8 @@ class KnowledgeBaseManager {
 
 const BASE_URL = 'https://atlas.matrix-net.tech/atlas/api';
 let token = '';
+let agentId = '';
+let conversationId = '';
 
 // 1. 登录
 async function login() {
@@ -1640,7 +1805,8 @@ async function createAgent() {
     })
   });
   const data = await response.json();
-  console.log('✅ 创建智能体:', data.name);
+  agentId = data.id;  // 保存 UUID
+  console.log('✅ 创建智能体:', data.name, 'ID:', data.id);
 }
 
 // 3. 创建客服
@@ -1659,12 +1825,13 @@ async function createConversation() {
     })
   });
   const data = await response.json();
-  console.log('✅ 创建客服:', data.name);
+  conversationId = data.id;  // 保存 UUID
+  console.log('✅ 创建客服:', data.name, 'ID:', data.id);
 }
 
-// 4. 发送消息
+// 4. 发送消息（使用 conversation UUID）
 async function sendMessage() {
-  const response = await fetch(`${BASE_URL}/chat/test-chat/message`, {
+  const response = await fetch(`${BASE_URL}/chat/${conversationId}/message`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -1684,6 +1851,9 @@ async function sendMessage() {
   await createAgent();
   await createConversation();
   await sendMessage();
+  console.log('\n✅ 所有测试通过！');
+  console.log('Agent ID:', agentId);
+  console.log('Conversation ID:', conversationId);
 })();
 ```
 
@@ -1782,7 +1952,12 @@ curl https://atlas.matrix-net.tech/atlas/health
 
 ---
 
-**文档版本**: v0.2.1  
-**最后更新**: 2025-01-21  
+**文档版本**: v0.2.2  
+**最后更新**: 2025-11-28  
 **后端 API 版本**: v0.2.0  
-**更新说明**: JWT 认证调试完成，知识库功能已验证
+**更新说明**: 
+- 修复文件上传向量化问题
+- 列表接口改为返回数组格式
+- 客服更新接口新增 agent_name 字段
+- 优化空知识库友好提示
+- 修复文件名污染问题

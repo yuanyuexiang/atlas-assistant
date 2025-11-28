@@ -38,7 +38,7 @@ export const AgentForm = ({ open, agent, onClose, onSuccess }: AgentFormProps) =
 
       if (isEdit && agent) {
         // 更新智能体（不能修改 name 和 agent_type）
-        await updateAgent(agent.name, {
+        await updateAgent(agent.id, {
           display_name: values.display_name,
           system_prompt: values.system_prompt,
           description: values.description,

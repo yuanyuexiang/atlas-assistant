@@ -13,8 +13,8 @@ interface AgentState {
     agent_type?: AgentType;
   }) => Promise<void>;
   
-  // 获取智能体详情
-  fetchAgent: (agentName: string) => Promise<void>;
+  // 获取智能体详情（使用 UUID）
+  fetchAgent: (agentId: string) => Promise<void>;
   
   // 创建智能体
   createAgent: (params: {
@@ -25,16 +25,16 @@ interface AgentState {
     description?: string;
   }) => Promise<Agent>;
   
-  // 更新智能体
-  updateAgent: (agentName: string, params: {
+  // 更新智能体（使用 UUID）
+  updateAgent: (agentId: string, params: {
     display_name?: string;
     system_prompt?: string;
     status?: 'active' | 'inactive';
     description?: string;
   }) => Promise<void>;
   
-  // 删除智能体
-  deleteAgent: (agentName: string) => Promise<void>;
+  // 删除智能体（使用 UUID）
+  deleteAgent: (agentId: string) => Promise<void>;
   
   // 设置当前智能体
   setCurrentAgent: (agent: Agent | null) => void;
@@ -57,10 +57,10 @@ export const useAgentStore = create<AgentState>((set) => ({
     }
   },
 
-  fetchAgent: async (agentName) => {
+  fetchAgent: async (agentId) => {
     set({ loading: true });
     try {
-      const agent = await agentApi.get(agentName);
+      const agent = await agentApi.get(agentId);
       set({ currentAgent: agent, loading: false });
     } catch (error) {
       console.error('获取智能体详情失败:', error);
@@ -85,15 +85,15 @@ export const useAgentStore = create<AgentState>((set) => ({
     }
   },
 
-  updateAgent: async (agentName, params) => {
+  updateAgent: async (agentId, params) => {
     set({ loading: true });
     try {
-      const updatedAgent = await agentApi.update(agentName, params);
+      const updatedAgent = await agentApi.update(agentId, params);
       set((state) => ({
         agents: state.agents.map((agent) =>
-          agent.name === agentName ? updatedAgent : agent
+          agent.id === agentId ? updatedAgent : agent
         ),
-        currentAgent: state.currentAgent?.name === agentName ? updatedAgent : state.currentAgent,
+        currentAgent: state.currentAgent?.id === agentId ? updatedAgent : state.currentAgent,
         loading: false,
       }));
     } catch (error) {
@@ -103,17 +103,17 @@ export const useAgentStore = create<AgentState>((set) => ({
     }
   },
 
-  deleteAgent: async (agentName) => {
+  deleteAgent: async (agentId) => {
     set({ loading: true });
     try {
-      await agentApi.delete(agentName);
+      await agentApi.delete(agentId);
       set((state) => ({
-        agents: state.agents.filter((agent) => agent.name !== agentName),
-        currentAgent: state.currentAgent?.name === agentName ? null : state.currentAgent,
+        agents: state.agents.filter((agent) => agent.id !== agentId),
+        currentAgent: state.currentAgent?.id === agentId ? null : state.currentAgent,
         loading: false,
       }));
     } catch (error) {
-      console.error('[Agent Store] 删除智能体失败:', error);
+      console.error('删除智能体失败:', error);
       set({ loading: false });
       throw error;
     }

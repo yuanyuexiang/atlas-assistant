@@ -60,6 +60,7 @@ export const useConversation = () => {
     avatar?: string;
     welcome_message?: string;
     status?: 'online' | 'offline' | 'busy';
+    agent_name?: string;  // 🆕 支持在更新时切换智能体
   }) => {
     setLoading(true);
     try {

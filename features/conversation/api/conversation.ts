@@ -15,6 +15,7 @@ export interface UpdateConversationParams {
   avatar?: string;
   welcome_message?: string;
   status?: 'online' | 'offline' | 'busy';
+  agent_name?: string;  // 🆕 可选：更换关联的智能体（支持 name 或 id）
 }
 
 export interface ConversationListParams {

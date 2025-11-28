@@ -42,17 +42,17 @@ import styles from './AgentDetailPage.module.css';
 const { Title, Text, Paragraph } = Typography;
 
 export default function AgentDetailPage() {
-  const { agentName } = useParams<{ agentName: string }>();
+  const { agentId } = useParams<{ agentId: string }>();
   const navigate = useNavigate();
   const { currentAgent, loading, fetchAgent, updateAgent, deleteAgent } = useAgent();
   const [formOpen, setFormOpen] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
   useEffect(() => {
-    if (agentName) {
-      fetchAgent(agentName);
+    if (agentId) {
+      fetchAgent(agentId);
     }
-  }, [agentName, fetchAgent]);
+  }, [agentId, fetchAgent]);
 
   const handleBack = () => {
     navigate('/agents');
@@ -87,7 +87,7 @@ export default function AgentDetailPage() {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await deleteAgent(currentAgent.name);
+          await deleteAgent(currentAgent.id);
           message.success('智能体删除成功');
           navigate('/agents');
         } catch (error) {
@@ -103,11 +103,11 @@ export default function AgentDetailPage() {
     setStatusLoading(true);
     try {
       const newStatus = checked ? 'active' : 'inactive';
-      await updateAgent(currentAgent.name, { status: newStatus });
+      await updateAgent(currentAgent.id, { status: newStatus });
       message.success(`智能体已${checked ? '启用' : '禁用'}`);
       // 重新获取最新数据
-      if (agentName) {
-        await fetchAgent(agentName);
+      if (agentId) {
+        await fetchAgent(agentId);
       }
     } catch (error) {
       console.error('状态切换失败:', error);
@@ -332,8 +332,8 @@ export default function AgentDetailPage() {
         onClose={() => setFormOpen(false)}
         onSuccess={() => {
           setFormOpen(false);
-          if (agentName) {
-            fetchAgent(agentName);
+          if (agentId) {
+            fetchAgent(agentId);
           }
         }}
       />

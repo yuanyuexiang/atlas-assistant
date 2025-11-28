@@ -8,7 +8,7 @@ import styles from './FileUpload.module.css';
 const { Dragger } = Upload;
 
 interface FileUploadProps {
-  agentName: string;
+  agentId: string;
   onUploadSuccess?: () => void;
   onUpload: (files: File[]) => Promise<void>;
   uploading?: boolean;
@@ -16,7 +16,7 @@ interface FileUploadProps {
 }
 
 export const FileUpload = ({ 
-  agentName,
+  agentId,
   onUploadSuccess, 
   onUpload,
   uploading = false,
@@ -75,7 +75,7 @@ export const FileUpload = ({
         .filter((file): file is File => file !== undefined);
       
       console.log('[FileUpload] 提取的 File 对象:', files);
-      console.log('[FileUpload] 目标智能体:', agentName);
+      console.log('[FileUpload] 目标智能体 ID:', agentId);
       
       if (files.length === 0) {
         message.error('文件列表为空，请重新选择文件');
@@ -83,7 +83,7 @@ export const FileUpload = ({
       }
       
       await onUpload(files);
-      message.success(`成功上传 ${files.length} 个文件到 ${agentName}`);
+      message.success(`成功上传 ${files.length} 个文件`);
       setFileList([]);
       onUploadSuccess?.();
     } catch (error: any) {
@@ -147,7 +147,7 @@ export const FileUpload = ({
         <div style={{ marginTop: 16 }}>
           <Progress percent={uploadProgress} status="active" />
           <p style={{ textAlign: 'center', marginTop: 8, color: '#666' }}>
-            正在上传到 {agentName}，请稍候...
+            正在上传，请稍候...
           </p>
         </div>
       )}

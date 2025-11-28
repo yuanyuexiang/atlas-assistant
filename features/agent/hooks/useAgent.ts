@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useAgentStore } from '../store';
 import type { AgentType, AgentStatus } from '@/types/models';
 
-export const useAgent = (agentName?: string) => {
+export const useAgent = (agentId?: string) => {
   const {
     agents,
     currentAgent,
@@ -16,10 +16,10 @@ export const useAgent = (agentName?: string) => {
   } = useAgentStore();
 
   useEffect(() => {
-    if (agentName) {
-      fetchAgent(agentName);
+    if (agentId) {
+      fetchAgent(agentId);
     }
-  }, [agentName, fetchAgent]);
+  }, [agentId, fetchAgent]);
 
   return {
     agents,

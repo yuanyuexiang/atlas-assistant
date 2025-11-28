@@ -39,19 +39,19 @@ export const agentApi = {
     return Array.isArray(response) ? response : [];
   },
 
-  // 获取智能体详情
-  get: (agentName: string) =>
-    get<Agent>(`/agents/${agentName}`),
+  // 获取智能体详情 (使用 UUID)
+  get: (agentId: string) =>
+    get<Agent>(`/agents/${agentId}`),
 
-  // 更新智能体
-  update: (agentName: string, params: UpdateAgentParams) =>
-    put<Agent>(`/agents/${agentName}`, params),
+  // 更新智能体 (使用 UUID)
+  update: (agentId: string, params: UpdateAgentParams) =>
+    put<Agent>(`/agents/${agentId}`, params),
 
-  // 删除智能体
-  delete: (agentName: string) =>
-    del(`/agents/${agentName}`),
+  // 删除智能体 (使用 UUID)
+  delete: (agentId: string) =>
+    del(`/agents/${agentId}`),
 
-  // 获取智能体统计
-  getStats: (agentName: string) =>
-    get<Agent>(`/agents/${agentName}`),
+  // 获取智能体统计 (使用 UUID)
+  getStats: (agentId: string) =>
+    get<Agent>(`/agents/${agentId}`),
 };

@@ -8,20 +8,20 @@ interface KnowledgeState {
   uploading: boolean;
   uploadProgress: number;
   
-  // 获取知识库文件列表
-  fetchFiles: (agentName: string) => Promise<void>;
+  // 获取知识库文件列表 (使用 agent UUID)
+  fetchFiles: (agentId: string) => Promise<void>;
   
-  // 上传文件
-  uploadFiles: (agentName: string, files: File[]) => Promise<DocumentInfo[]>;
+  // 上传文件 (使用 agent UUID)
+  uploadFiles: (agentId: string, files: File[]) => Promise<DocumentInfo[]>;
   
-  // 删除文件
-  deleteFile: (agentName: string, fileId: string) => Promise<void>;
+  // 删除文件 (使用 agent UUID)
+  deleteFile: (agentId: string, fileId: string) => Promise<void>;
   
-  // 清空知识库
-  clearKnowledge: (agentName: string) => Promise<void>;
+  // 清空知识库 (使用 agent UUID)
+  clearKnowledge: (agentId: string) => Promise<void>;
   
-  // 重建索引
-  rebuildIndex: (agentName: string) => Promise<void>;
+  // 重建索引 (使用 agent UUID)
+  rebuildIndex: (agentId: string) => Promise<void>;
   
   // 设置上传进度
   setUploadProgress: (progress: number) => void;
@@ -33,11 +33,11 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
   uploading: false,
   uploadProgress: 0,
 
-  fetchFiles: async (agentName) => {
-    console.log('[Knowledge Store] 获取文件列表:', agentName);
+  fetchFiles: async (agentId) => {
+    console.log('[Knowledge Store] 获取文件列表:', agentId);
     set({ loading: true });
     try {
-      const files = await knowledgeApi.list(agentName);
+      const files = await knowledgeApi.list(agentId);
       console.log('[Knowledge Store] 获取成功:', files.length, '个文件');
       set({ files, loading: false });
     } catch (error: any) {
@@ -56,13 +56,13 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     }
   },
 
-  uploadFiles: async (agentName, files) => {
+  uploadFiles: async (agentId, files) => {
     console.log('[Knowledge Store] 开始上传:', files.length, '个文件');
-    console.log('[Knowledge Store] 智能体名称:', agentName);
+    console.log('[Knowledge Store] 智能体 ID:', agentId);
     console.log('[Knowledge Store] 文件详情:', files.map(f => ({ name: f.name, size: f.size, type: f.type })));
     set({ uploading: true, uploadProgress: 0 });
     try {
-      const result = await knowledgeApi.upload(agentName, files);
+      const result = await knowledgeApi.upload(agentId, files);
       console.log('[Knowledge Store] 上传成功:', result.uploaded_files.length, '个文件');
       
       // 更新文件列表
@@ -80,11 +80,11 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     }
   },
 
-  deleteFile: async (agentName, fileId) => {
+  deleteFile: async (agentId, fileId) => {
     console.log('[Knowledge Store] 删除文件:', fileId);
     set({ loading: true });
     try {
-      await knowledgeApi.delete(agentName, fileId);
+      await knowledgeApi.delete(agentId, fileId);
       console.log('[Knowledge Store] 删除成功:', fileId);
       
       set((state) => ({
@@ -98,10 +98,10 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     }
   },
 
-  clearKnowledge: async (agentName) => {
+  clearKnowledge: async (agentId) => {
     set({ loading: true });
     try {
-      await knowledgeApi.clear(agentName);
+      await knowledgeApi.clear(agentId);
       set({ files: [], loading: false });
     } catch (error) {
       console.error('[Knowledge Store] 清空知识库失败:', error);
@@ -110,10 +110,10 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     }
   },
 
-  rebuildIndex: async (agentName) => {
+  rebuildIndex: async (agentId) => {
     set({ loading: true });
     try {
-      await knowledgeApi.rebuild(agentName);
+      await knowledgeApi.rebuild(agentId);
       set({ loading: false });
     } catch (error) {
       console.error('[Knowledge Store] 重建索引失败:', error);

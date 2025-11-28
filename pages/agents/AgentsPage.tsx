@@ -60,7 +60,7 @@ export default function AgentsPage() {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await deleteAgent(agent.name);
+          await deleteAgent(agent.id);
           message.success('智能体删除成功');
           // 刷新列表
           await fetchAgents();

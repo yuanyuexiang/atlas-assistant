@@ -19,7 +19,7 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const { message } = App.useApp();
-  const { createConversation, updateConversation, switchAgent } = useConversation();
+  const { createConversation, updateConversation } = useConversation();
   // 编辑时获取所有智能体，创建时只获取活跃的
   const { agents } = useAgentList({ status: conversation ? undefined : 'active' });
   const isEdit = !!conversation;
@@ -50,19 +50,17 @@ export const ConversationForm = ({ open, conversation, onClose, onSuccess }: Con
       setLoading(true);
 
       if (isEdit && conversation) {
-        // 检查智能体是否改变
+        // 🆕 直接在 update 中包含 agent_name，后端会自动处理智能体切换
         const agentChanged = values.agent_name && values.agent_name !== conversation.agent_name;
         
-        // 先更新基本信息
         await updateConversation(conversation.id, {
           display_name: values.display_name,
           welcome_message: values.welcome_message,
           status: values.status,
+          agent_name: agentChanged ? values.agent_name : undefined,  // 只在变化时传递
         });
         
-        // 如果智能体改变，调用切换接口
         if (agentChanged) {
-          await switchAgent(conversation.id, values.agent_name);
           message.success('客服更新成功，智能体已切换');
         } else {
           message.success('客服更新成功');

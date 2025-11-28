@@ -27,7 +27,7 @@ export const AgentCard = ({ agent, onEdit, onDelete }: AgentCardProps) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/agents/${agent.name}`);
+    navigate(`/agents/${agent.id}`);
   };
 
   const handleMenuClick = (e: { key: string }) => {

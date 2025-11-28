@@ -38,7 +38,7 @@ export function Router() {
             <Route index element={<Navigate to="/chat" replace />} />
             <Route path="chat" element={<ChatPage />} />
             <Route path="agents" element={<AgentsPage />} />
-            <Route path="agents/:agentName" element={<AgentDetailPage />} />
+            <Route path="agents/:agentId" element={<AgentDetailPage />} />
             <Route path="conversations" element={<ConversationsPage />} />
             <Route path="knowledge" element={<KnowledgePage />} />
           </Route>
