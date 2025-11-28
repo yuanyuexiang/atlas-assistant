@@ -113,7 +113,7 @@ export const KnowledgePage = () => {
   };
 
   // 删除单个文件
-  const handleDelete = (filename: string) => {
+  const handleDelete = (filename: string,file_id: string) => {
     if (!selectedAgentId) {
       message.error('请先选择智能体');
       return;
@@ -127,9 +127,9 @@ export const KnowledgePage = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          await deleteFile(selectedAgentId, filename);
+          await deleteFile(selectedAgentId, file_id);
           message.success('文件已删除');
-          setSelectedRowKeys(prev => prev.filter(key => key !== filename));
+          setSelectedRowKeys(prev => prev.filter(key => key !== file_id));
         } catch (error: any) {
           message.error(error.response?.data?.detail || '删除失败');
         }
@@ -303,7 +303,7 @@ export const KnowledgePage = () => {
         icon: <DeleteOutlined />,
         label: '删除',
         danger: true,
-        onClick: () => handleDelete(record.filename),
+        onClick: () => handleDelete(record.filename, record.file_id),
       },
     ],
   });
