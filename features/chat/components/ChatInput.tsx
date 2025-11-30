@@ -18,6 +18,7 @@ export const ChatInput = ({ conversationId, agentId }: ChatInputProps) => {
   const handleSend = () => {
     if (!content.trim() || isStreaming) return;
     
+    console.log('[ChatInput] 发送消息, conversationId:', conversationId, 'agentId:', agentId);
     sendMessage(content, agentId);
     setContent('');
   };

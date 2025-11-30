@@ -56,7 +56,7 @@ export default function ChatPage() {
     <div className={styles.pageContainer}>
       <div className={styles.contentWrapper}>
         {/* 顶部工具栏 */}
-        <Card className={styles.headerCard} bordered={false}>
+        <Card className={styles.headerCard} variant="borderless">
           <div className={styles.headerContent}>
             <div className={styles.titleSection}>
               <CustomerServiceOutlined className={styles.titleIcon} />
@@ -86,7 +86,7 @@ export default function ChatPage() {
                 onChange={setConversationId}
                 loading={loading}
                 suffixIcon={<CustomerServiceOutlined />}
-                popupClassName={styles.selectDropdown}
+                popupMatchSelectWidth={false}
                 options={conversations.map(c => ({
                   value: c.id,
                   label: (
@@ -128,7 +128,7 @@ export default function ChatPage() {
         </Card>
 
         {/* 聊天区域 */}
-        <Card className={styles.chatCard} bordered={false}>
+        <Card className={styles.chatCard} variant="borderless">
           {conversationId ? (
             <div className={styles.chatContainer}>
               <ChatWindow conversationId={conversationId} />

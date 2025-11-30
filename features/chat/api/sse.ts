@@ -23,8 +23,16 @@ export class SSEService {
   // 开始流式对话
   async startStream({ conversation_id, content, agent_id, onMessage, onError, onComplete }: SSEStreamParams) {
     try {
+      // 验证必需参数
+      if (!conversation_id) {
+        throw new Error('conversation_id 是必需的参数');
+      }
+      
       const token = localStorage.getItem(TOKEN_KEY);
-      const url = new URL(`${API_BASE_URL}/chat/stream`);
+      const url = new URL(`${API_BASE_URL}/chat/${conversation_id}/message/stream`);
+      
+      console.log('[SSE] 流式对话 URL:', url.toString());
+      console.log('[SSE] conversation_id:', conversation_id);
       
       // 使用 fetch 进行 SSE 流式请求
       this.controller = new AbortController();
