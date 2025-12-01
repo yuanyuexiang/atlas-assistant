@@ -2,28 +2,6 @@
 import { http } from '@/lib/http/http';
 import type { DocumentInfo } from '@/types/models';
 
-export interface UploadFileParams {
-  agent_name: string;
-  files: File[];
-}
-
-export interface KnowledgeListParams {
-  agent_name: string;
-}
-
-export interface DeleteFileParams {
-  agent_name: string;
-  file_id: string;
-}
-
-export interface ClearKnowledgeParams {
-  agent_name: string;
-}
-
-export interface RebuildIndexParams {
-  agent_name: string;
-}
-
 export interface KnowledgeStats {
   total_files: number;
   total_size_mb: number;

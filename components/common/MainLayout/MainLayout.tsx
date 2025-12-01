@@ -35,6 +35,15 @@ export const MainLayout = () => {
       ),
       label: <span className={styles.menuLabel}>对话</span>,
     },
+        {
+      key: '/conversations',
+      icon: (
+        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+          <TeamOutlined />
+        </div>
+      ),
+      label: <span className={styles.menuLabel}>客服</span>,
+    },
     {
       key: '/agents',
       icon: (
@@ -43,15 +52,6 @@ export const MainLayout = () => {
         </div>
       ),
       label: <span className={styles.menuLabel}>智能体</span>,
-    },
-    {
-      key: '/conversations',
-      icon: (
-        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-          <TeamOutlined />
-        </div>
-      ),
-      label: <span className={styles.menuLabel}>客服</span>,
     },
     {
       key: '/knowledge',
