@@ -41,10 +41,43 @@
   min-width: 0;
 }
 
+.avatarWrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .avatar {
   border: 3px solid #f0f0f0;
   transition: all 0.3s ease;
-  flex-shrink: 0;
+}
+
+.statusDot {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.statusDot[data-status="online"] {
+  background: #52c41a;
+}
+
+.statusDot[data-status="busy"] {
+  background: #faad14;
+}
+
+.statusDot[data-status="offline"] {
+  background: #d9d9d9;
+}
+
+.card:hover .statusDot {
+  transform: scale(1.1);
 }
 
 .card:hover .avatar {
@@ -62,13 +95,6 @@
   padding-top: 4px;
 }
 
-.nameRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
 .displayName {
   font-size: 18px;
   font-weight: 700;
@@ -81,15 +107,6 @@
   font-size: 13px;
   color: #999;
   font-family: 'Monaco', 'Menlo', monospace;
-}
-
-.statusTag {
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border: none;
-  line-height: 1;
 }
 
 .moreButton {
@@ -160,16 +177,51 @@
 
 /* 欢迎消息区域 */
 .welcomeSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   padding: 12px;
-  background: #fafafa;
-  border-radius: 10px;
-  border-left: 3px solid #667eea;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
 }
 
-.welcomeMessage {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
+.card:hover .welcomeSection {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.welcomeIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.welcomeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.welcomeLabel {
+  font-size: 12px;
+  color: #999;
+}
+
+.welcomeText {
+  margin: 0 !important;
+  font-size: 14px;
+  color: #333;
   line-height: 1.6;
 }
 

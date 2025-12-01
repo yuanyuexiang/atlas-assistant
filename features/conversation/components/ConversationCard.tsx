@@ -1,4 +1,4 @@
-import { Card, Tag, Button, Typography, Avatar, Badge, Dropdown } from 'antd';
+import { Card, Button, Typography, Avatar, Dropdown } from 'antd';
 import {
   UserOutlined,
   EditOutlined,
@@ -8,10 +8,10 @@ import {
   ClockCircleOutlined,
   SwapOutlined,
   MoreOutlined,
+  CommentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import type { Conversation } from '@/types/models';
-import { CONVERSATION_STATUS_MAP, CONVERSATION_STATUS_COLORS } from '@/lib/constants';
 import { formatRelativeTime } from '@/lib/utils/format';
 import styles from './ConversationCard.module.css';
 
@@ -81,29 +81,25 @@ export const ConversationCard = ({
       bodyStyle={{ padding: '24px' }}
     >
       <div className={styles.cardContent}>
-        {/* 头部：头像 + 名称 + 状态 */}
+        {/* 头部：头像 + 名称 */}
         <div className={styles.header}>
           <div className={styles.mainInfo}>
-            <Badge 
-              status={conversation.status === 'online' ? 'success' : conversation.status === 'busy' ? 'warning' : 'default'}
-              offset={[-5, 45]}
-            >
+            <div className={styles.avatarWrapper}>
               <Avatar 
                 size={64} 
                 src={conversation.avatar} 
                 icon={<UserOutlined />}
                 className={styles.avatar}
               />
-            </Badge>
+              <span 
+                className={styles.statusDot}
+                data-status={conversation.status}
+              />
+            </div>
             <div className={styles.infoContent}>
-              <div className={styles.nameRow}>
-                <Text strong className={styles.displayName}>
-                  {conversation.display_name}
-                </Text>
-                <Tag color={CONVERSATION_STATUS_COLORS[conversation.status]} className={styles.statusTag}>
-                  {CONVERSATION_STATUS_MAP[conversation.status]}
-                </Tag>
-              </div>
+              <Text strong className={styles.displayName}>
+                {conversation.display_name}
+              </Text>
               <Text type="secondary" className={styles.systemName}>
                 {conversation.name}
               </Text>
@@ -139,12 +135,18 @@ export const ConversationCard = ({
         {/* 欢迎消息 */}
         {conversation.welcome_message && (
           <div className={styles.welcomeSection}>
-            <Paragraph
-              ellipsis={{ rows: 2 }}
-              className={styles.welcomeMessage}
-            >
-              {conversation.welcome_message}
-            </Paragraph>
+            <div className={styles.welcomeIcon}>
+              <CommentOutlined />
+            </div>
+            <div className={styles.welcomeInfo}>
+              <Text type="secondary" className={styles.welcomeLabel}>欢迎消息</Text>
+              <Paragraph
+                ellipsis={{ rows: 2 }}
+                className={styles.welcomeText}
+              >
+                {conversation.welcome_message}
+              </Paragraph>
+            </div>
           </div>
         )}
 
