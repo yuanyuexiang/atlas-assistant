@@ -28,10 +28,12 @@ export const KnowledgePage = () => {
   const { agents, loading: loadingAgents } = useAgentList();
   const {
     files,
+    stats,
     loading,
     uploading,
     uploadProgress,
     fetchFiles,
+    fetchStats,
     uploadFiles,
     deleteFile,
     clearKnowledge,
@@ -52,16 +54,21 @@ export const KnowledgePage = () => {
     }
   }, [agents, selectedAgentId]);
 
-  // 当选中智能体时，加载其知识库文件
+  // 当选中智能体时，加载其知识库文件和统计数据
   useEffect(() => {
     if (selectedAgentId) {
+      // 并行加载文件列表和统计数据，文件列表404可以忽略，统计数据错误直接显示
       fetchFiles(selectedAgentId).catch(error => {
         if (error.response?.status !== 404) {
-          console.error('[KnowledgePage] 加载失败:', error);
+          console.error('[KnowledgePage] 加载文件失败:', error);
         }
       });
+      fetchStats(selectedAgentId).catch(error => {
+        console.error('[KnowledgePage] 加载统计失败:', error);
+        message.error(`获取统计数据失败: ${error.response?.data?.detail || error.message}`);
+      });
     }
-  }, [selectedAgentId, fetchFiles]);
+  }, [selectedAgentId, fetchFiles, fetchStats, message]);
 
   // 格式化文件大小
   const formatFileSize = (sizeMB: number): string => {
@@ -225,13 +232,16 @@ export const KnowledgePage = () => {
     });
   };
 
-  // 刷新文件列表
+  // 刷新文件列表和统计数据
   const handleRefresh = async () => {
     if (!selectedAgentId) {
       message.warning('请先选择智能体');
       return;
     }
-    await fetchFiles(selectedAgentId);
+    await Promise.all([
+      fetchFiles(selectedAgentId),
+      fetchStats(selectedAgentId)
+    ]);
     message.success('刷新成功');
   };
 
@@ -275,10 +285,13 @@ export const KnowledgePage = () => {
     key: file.file_id,
   }));
 
-  // 计算统计数据
-  const totalFiles = files.length;
-  const totalSize = files.reduce((sum, file) => sum + file.file_size_mb, 0);
-  const totalChunks = files.reduce((sum, file) => sum + file.chunks_count, 0);
+  // 直接使用后端统计数据，不做降级处理
+  const totalFiles = stats?.total_files || 0;
+  const totalSize = stats?.total_size_mb || 0;
+  const totalChunks = stats?.total_chunks || 0;
+  
+  // 计算使用此知识库的智能体数量（当前只显示选中的智能体）
+  const usedByAgents = selectedAgentId && totalFiles > 0 ? 1 : 0;
 
   // Table 操作菜单
   const getActionMenu = (record: TableDataType): MenuProps => ({
@@ -507,7 +520,7 @@ export const KnowledgePage = () => {
         <Card className={styles.statCard}>
           <div className={styles.statContent}>
             <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-              <DatabaseOutlined />
+              <FileOutlined />
             </div>
             <div className={styles.statInfo}>
               <div className={styles.statValue}>{totalFiles}</div>
@@ -518,24 +531,24 @@ export const KnowledgePage = () => {
 
         <Card className={styles.statCard}>
           <div className={styles.statContent}>
-            <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-              <FileOutlined />
+            <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+              <FileTextOutlined />
             </div>
             <div className={styles.statInfo}>
-              <div className={styles.statValue}>{totalSize.toFixed(2)} MB</div>
-              <div className={styles.statLabel}>总大小</div>
+              <div className={styles.statValue}>{totalChunks.toLocaleString()}</div>
+              <div className={styles.statLabel}>向量总数</div>
             </div>
           </div>
         </Card>
 
         <Card className={styles.statCard}>
           <div className={styles.statContent}>
-            <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-              <FileTextOutlined />
+            <div className={styles.statIcon} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+              <DatabaseOutlined />
             </div>
             <div className={styles.statInfo}>
-              <div className={styles.statValue}>{totalChunks}</div>
-              <div className={styles.statLabel}>Chunks 总数</div>
+              <div className={styles.statValue}>{totalSize.toFixed(2)} MB</div>
+              <div className={styles.statLabel}>存储大小</div>
             </div>
           </div>
         </Card>
@@ -546,8 +559,8 @@ export const KnowledgePage = () => {
               <CheckCircleOutlined />
             </div>
             <div className={styles.statInfo}>
-              <div className={styles.statValue}>{selectedRowKeys.length}</div>
-              <div className={styles.statLabel}>已选中</div>
+              <div className={styles.statValue}>{usedByAgents}</div>
+              <div className={styles.statLabel}>使用客服数</div>
             </div>
           </div>
         </Card>

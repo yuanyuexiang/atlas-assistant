@@ -3,10 +3,12 @@ import { useKnowledgeStore } from '../store';
 export const useKnowledge = () => {
   const {
     files,
+    stats,
     loading,
     uploading,
     uploadProgress,
     fetchFiles,
+    fetchStats,
     uploadFiles,
     deleteFile,
     clearKnowledge,
@@ -16,10 +18,12 @@ export const useKnowledge = () => {
 
   return {
     files,
+    stats,
     loading,
     uploading,
     uploadProgress,
     fetchFiles,
+    fetchStats,
     uploadFiles,
     deleteFile,
     clearKnowledge,

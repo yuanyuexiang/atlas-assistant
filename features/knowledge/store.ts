@@ -1,15 +1,19 @@
 import { create } from 'zustand';
 import type { DocumentInfo } from '@/types/models';
-import { knowledgeApi } from './api/knowledge';
+import { knowledgeApi, type KnowledgeStats } from './api/knowledge';
 
 interface KnowledgeState {
   files: DocumentInfo[];
+  stats: KnowledgeStats | null;
   loading: boolean;
   uploading: boolean;
   uploadProgress: number;
   
   // 获取知识库文件列表 (使用 agent UUID)
   fetchFiles: (agentId: string) => Promise<void>;
+  
+  // 获取知识库统计数据 (使用 agent UUID)
+  fetchStats: (agentId: string) => Promise<void>;
   
   // 上传文件 (使用 agent UUID)
   uploadFiles: (agentId: string, files: File[]) => Promise<DocumentInfo[]>;
@@ -29,9 +33,23 @@ interface KnowledgeState {
 
 export const useKnowledgeStore = create<KnowledgeState>((set) => ({
   files: [],
+  stats: null,
   loading: false,
   uploading: false,
   uploadProgress: 0,
+
+  fetchStats: async (agentId) => {
+    console.log('[Knowledge Store] 获取统计数据:', agentId);
+    try {
+      const stats = await knowledgeApi.stats(agentId);
+      console.log('[Knowledge Store] 统计数据:', stats);
+      set({ stats });
+    } catch (error: any) {
+      console.error('[Knowledge Store] 获取统计数据失败:', error);
+      // 直接抛出错误，不做任何处理
+      throw error;
+    }
+  },
 
   fetchFiles: async (agentId) => {
     console.log('[Knowledge Store] 获取文件列表:', agentId);
