@@ -18,19 +18,29 @@ export default function ChatPage() {
   const { loadMessages, clearHistory, messages } = useChatStore();
   const { message } = App.useApp();
 
-  // 自动选择第一个客服
+  // 自动选择第一个在线客服
   useEffect(() => {
     if (conversations.length > 0 && !conversationId) {
-      setConversationId(conversations[0].id);
+      // 优先选择在线的客服
+      const onlineConversation = conversations.find(c => c.status === 'online');
+      const targetConversation = onlineConversation || conversations[0];
+      setConversationId(targetConversation.id);
     }
   }, [conversations, conversationId]);
 
   // 当切换客服时，加载历史消息
   useEffect(() => {
     if (conversationId) {
-      loadMessages(conversationId);
+      loadMessages(conversationId).catch((error) => {
+        console.error('加载消息失败:', error);
+        if (error.response?.status === 404) {
+          message.warning('该客服暂无历史消息');
+        } else {
+          message.error('加载消息失败');
+        }
+      });
     }
-  }, [conversationId, loadMessages]);
+  }, [conversationId, loadMessages, message]);
 
   const handleClearHistory = () => {
     if (!conversationId) return;

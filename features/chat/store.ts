@@ -43,8 +43,19 @@ export const useChatStore = create<ChatState>((set) => ({
           [conversationId]: response.data || [],
         },
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('加载消息失败:', error);
+      // 404 表示消息不存在，设置为空数组而不是抛出错误
+      if (error.response?.status === 404) {
+        set((state) => ({
+          messages: {
+            ...state.messages,
+            [conversationId]: [],
+          },
+        }));
+      } else {
+        throw error;
+      }
     }
   },
 
