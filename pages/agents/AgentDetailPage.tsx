@@ -250,7 +250,7 @@ export default function AgentDetailPage() {
           <Col span={6}>
             <Statistic
               title="存储大小"
-              value={currentAgent.knowledge_base.total_size_mb.toFixed(2)}
+              value={(currentAgent.knowledge_base.total_size_mb || 0).toFixed(2)}
               suffix="MB"
             />
           </Col>
@@ -279,7 +279,7 @@ export default function AgentDetailPage() {
                     description={
                       <Space split="|">
                         <Text type="secondary">
-                          大小: {file.file_size_mb.toFixed(2)} MB
+                          大小: {(file.file_size_mb || 0).toFixed(2)} MB
                         </Text>
                         <Text type="secondary">
                           分块数: {file.chunks_count}

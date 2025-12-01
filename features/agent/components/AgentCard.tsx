@@ -141,7 +141,7 @@ export const AgentCard = ({ agent, onEdit, onDelete }: AgentCardProps) => {
               </Text>
               <Text type="secondary">|</Text>
               <Text strong className={styles.knowledgeStat}>
-                {agent.knowledge_base.total_size_mb.toFixed(1)} MB
+                {(agent.knowledge_base.total_size_mb || 0).toFixed(1)} MB
               </Text>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Typography, Badge, Tooltip } from 'antd';
 import {
   MessageOutlined,
@@ -23,42 +23,82 @@ export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
+  
+  // 从 localStorage 读取用户偏好，小屏幕默认收起
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('siderCollapsed');
+    if (saved !== null) {
+      return saved === 'true';
+    }
+    return window.innerWidth < 1200;
+  });
+
+  // 响应式处理：小屏幕自动收起
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1200 && !collapsed) {
+        setCollapsed(true);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [collapsed]);
+
+  // 保存折叠状态到 localStorage
+  const toggleCollapse = () => {
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    localStorage.setItem('siderCollapsed', String(newCollapsed));
+  };
+
+  // 双击 Logo 快速切换
+  const handleLogoDoubleClick = () => {
+    toggleCollapse();
+  };
 
   const menuItems = [
     {
       key: '/chat',
       icon: (
-        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-          <MessageOutlined />
-        </div>
+        <Tooltip title={collapsed ? '对话' : ''} placement="right">
+          <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <MessageOutlined />
+          </div>
+        </Tooltip>
       ),
       label: <span className={styles.menuLabel}>对话</span>,
     },
-        {
+    {
       key: '/conversations',
       icon: (
-        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
-          <TeamOutlined />
-        </div>
+        <Tooltip title={collapsed ? '客服' : ''} placement="right">
+          <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' }}>
+            <TeamOutlined />
+          </div>
+        </Tooltip>
       ),
       label: <span className={styles.menuLabel}>客服</span>,
     },
     {
       key: '/agents',
       icon: (
-        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
-          <RobotOutlined />
-        </div>
+        <Tooltip title={collapsed ? '智能体' : ''} placement="right">
+          <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }}>
+            <RobotOutlined />
+          </div>
+        </Tooltip>
       ),
       label: <span className={styles.menuLabel}>智能体</span>,
     },
     {
       key: '/knowledge',
       icon: (
-        <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
-          <BookOutlined />
-        </div>
+        <Tooltip title={collapsed ? '知识库' : ''} placement="right">
+          <div className={styles.menuIcon} style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+            <BookOutlined />
+          </div>
+        </Tooltip>
       ),
       label: <span className={styles.menuLabel}>知识库</span>,
     },
@@ -101,21 +141,26 @@ export const MainLayout = () => {
         <div className={styles.siderContent}>
           {/* Logo 区域 - 带渐变背景 */}
           <div className={styles.siderHeader}>
-            <div className={styles.logoContainer}>
-              <div className={styles.logoIcon}>
-                <RobotOutlined />
-              </div>
-              {!collapsed && (
-                <div className={styles.logoInfo}>
-                  <Text strong className={styles.logoText}>
-                    Atlas
-                  </Text>
-                  <Text className={styles.logoSubtext}>
-                    智能助手平台
-                  </Text>
+            <Tooltip title={collapsed ? '双击展开' : '双击收起'} placement="right">
+              <div 
+                className={styles.logoContainer}
+                onDoubleClick={handleLogoDoubleClick}
+              >
+                <div className={styles.logoIcon}>
+                  <RobotOutlined />
                 </div>
-              )}
-            </div>
+                {!collapsed && (
+                  <div className={styles.logoInfo}>
+                    <Text strong className={styles.logoText}>
+                      Atlas
+                    </Text>
+                    <Text className={styles.logoSubtext}>
+                      智能助手平台
+                    </Text>
+                  </div>
+                )}
+              </div>
+            </Tooltip>
           </div>
 
           {/* 菜单区域 */}
@@ -154,9 +199,11 @@ export const MainLayout = () => {
         </div>
 
         {/* 折叠触发按钮 - 悬浮在侧边栏右边缘 */}
-        <div className={styles.collapseTrigger} onClick={() => setCollapsed(!collapsed)}>
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </div>
+        <Tooltip title={collapsed ? '展开侧边栏' : '收起侧边栏'} placement="right">
+          <div className={styles.collapseTrigger} onClick={toggleCollapse}>
+            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          </div>
+        </Tooltip>
       </Sider>
 
       <Layout>

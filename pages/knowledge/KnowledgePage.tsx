@@ -547,7 +547,7 @@ export const KnowledgePage = () => {
               <DatabaseOutlined />
             </div>
             <div className={styles.statInfo}>
-              <div className={styles.statValue}>{totalSize.toFixed(2)} MB</div>
+              <div className={styles.statValue}>{(totalSize || 0).toFixed(2)} MB</div>
               <div className={styles.statLabel}>存储大小</div>
             </div>
           </div>

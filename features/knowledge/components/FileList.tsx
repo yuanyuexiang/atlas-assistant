@@ -38,7 +38,7 @@ export const FileList = ({
       dataIndex: 'file_size_mb',
       key: 'file_size_mb',
       width: 120,
-      render: (size: number) => `${size.toFixed(2)} MB`,
+      render: (size: number) => `${(size || 0).toFixed(2)} MB`,
       sorter: (a, b) => a.file_size_mb - b.file_size_mb,
     },
     {
