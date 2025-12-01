@@ -8,6 +8,7 @@ import {
   MoreOutlined,
   CloudServerOutlined,
   ClockCircleOutlined,
+  CommentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import type { Agent } from '@/types/models';
@@ -108,12 +109,18 @@ export const AgentCard = ({ agent, onEdit, onDelete }: AgentCardProps) => {
         {/* 描述 */}
         {agent.description && (
           <div className={styles.descriptionSection}>
-            <Paragraph
-              ellipsis={{ rows: 2 }}
-              className={styles.description}
-            >
-              {agent.description}
-            </Paragraph>
+            <div className={styles.descriptionIcon}>
+              <FileTextOutlined />
+            </div>
+            <div className={styles.descriptionInfo}>
+              <Text type="secondary" className={styles.descriptionLabel}>智能体描述</Text>
+              <Paragraph
+                ellipsis={{ rows: 2 }}
+                className={styles.descriptionText}
+              >
+                {agent.description}
+              </Paragraph>
+            </div>
           </div>
         )}
 
@@ -142,12 +149,18 @@ export const AgentCard = ({ agent, onEdit, onDelete }: AgentCardProps) => {
 
         {/* 系统提示词预览 */}
         <div className={styles.promptSection}>
-          <Paragraph
-            ellipsis={{ rows: 2 }}
-            className={styles.prompt}
-          >
-            {agent.system_prompt}
-          </Paragraph>
+          <div className={styles.promptIcon}>
+            <CommentOutlined />
+          </div>
+          <div className={styles.promptInfo}>
+            <Text type="secondary" className={styles.promptLabel}>系统提示词</Text>
+            <Paragraph
+              ellipsis={{ rows: 2 }}
+              className={styles.promptText}
+            >
+              {agent.system_prompt}
+            </Paragraph>
+          </div>
         </div>
 
         {/* 统计信息 */}

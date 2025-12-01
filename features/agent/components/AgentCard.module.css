@@ -121,16 +121,51 @@
 
 /* 描述区域 */
 .descriptionSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   padding: 12px;
-  background: #fafafa;
-  border-radius: 10px;
-  border-left: 3px solid #667eea;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
 }
 
-.description {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
+.card:hover .descriptionSection {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.descriptionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.descriptionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.descriptionLabel {
+  font-size: 12px;
+  color: #999;
+}
+
+.descriptionText {
+  margin: 0 !important;
+  font-size: 14px;
+  color: #333;
   line-height: 1.6;
 }
 
@@ -194,15 +229,51 @@
 
 /* 系统提示词区域 */
 .promptSection {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   padding: 12px;
-  background: #fafafa;
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+  transition: all 0.3s ease;
 }
 
-.prompt {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
+.card:hover .promptSection {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.promptIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.promptInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.promptLabel {
+  font-size: 12px;
+  color: #999;
+}
+
+.promptText {
+  margin: 0 !important;
+  font-size: 14px;
+  color: #333;
   line-height: 1.6;
 }
 
