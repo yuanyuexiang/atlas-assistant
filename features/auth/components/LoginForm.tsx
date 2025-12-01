@@ -1,19 +1,15 @@
 import { useState } from 'react';
-import { Form, Input, Button, Card, Tabs, message } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message, Space } from 'antd';
+import { UserOutlined, LockOutlined, RobotOutlined, DatabaseOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../hooks/useAuth';
 import styles from './LoginForm.module.css';
 
-type TabKey = 'login' | 'register';
-
 export const LoginForm = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>('login');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, register } = useAuth();
-  const [loginForm] = Form.useForm();
-  const [registerForm] = Form.useForm();
+  const { login } = useAuth();
+  const [form] = Form.useForm();
 
   const handleLogin = async (values: { username: string; password: string }) => {
     setLoading(true);
@@ -29,164 +25,103 @@ export const LoginForm = () => {
     }
   };
 
-  const handleRegister = async (values: { username: string; email: string; password: string }) => {
-    setLoading(true);
-    try {
-      await register(values.username, values.email, values.password);
-      message.success('注册成功');
-      navigate('/chat');
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.detail || error.message || '注册失败';
-      message.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className={styles.container}>
-      <Card className={styles.card}>
-        <div className={styles.header}>
-          <h1>Atlas Assistant</h1>
-          <p>智能客服助手</p>
+      {/* 左侧品牌展示区 */}
+      <div className={styles.brandSection}>
+        <div className={styles.brandContent}>
+          <div className={styles.logoCircle}>
+            <div className={styles.logoIcon}>🤖</div>
+          </div>
+          
+          <h1 className={styles.brandTitle}>Atlas Assistant</h1>
+          <p className={styles.brandSubtitle}>智能客服助手管理系统</p>
+          
+          <p className={styles.brandSlogan}>
+            为您的业务提供智能化的客服解决方案
+          </p>
+          
+          <div className={styles.features}>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>
+                <RobotOutlined />
+              </div>
+              <span className={styles.featureText}>智能对话</span>
+            </div>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>
+                <DatabaseOutlined />
+              </div>
+              <span className={styles.featureText}>知识管理</span>
+            </div>
+            <div className={styles.feature}>
+              <div className={styles.featureIcon}>
+                <ThunderboltOutlined />
+              </div>
+              <span className={styles.featureText}>快速响应</span>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <Tabs
-          activeKey={activeTab}
-          onChange={(key) => setActiveTab(key as TabKey)}
-          centered
-          items={[
-            {
-              key: 'login',
-              label: '登录',
-              children: (
-                <Form
-                  form={loginForm}
-                  name="login"
-                  onFinish={handleLogin}
-                  autoComplete="off"
-                  size="large"
-                >
-                  <Form.Item
-                    name="username"
-                    rules={[{ required: true, message: '请输入用户名' }]}
-                  >
-                    <Input
-                      prefix={<UserOutlined />}
-                      placeholder="用户名"
-                    />
-                  </Form.Item>
+      {/* 右侧登录表单区 */}
+      <div className={styles.formSection}>
+        <div className={styles.formContent}>
+          <div className={styles.formHeader}>
+            <h2 className={styles.formTitle}>欢迎登录</h2>
+            <p className={styles.formSubtitle}>Atlas Assistant 管理平台</p>
+          </div>
 
-                  <Form.Item
-                    name="password"
-                    rules={[{ required: true, message: '请输入密码' }]}
-                  >
-                    <Input.Password
-                      prefix={<LockOutlined />}
-                      placeholder="密码"
-                    />
-                  </Form.Item>
+          <Form
+            form={form}
+            name="login"
+            onFinish={handleLogin}
+            autoComplete="off"
+            size="large"
+            layout="vertical"
+            className={styles.form}
+          >
+            <Form.Item
+              label="用户名"
+              name="username"
+              rules={[{ required: true, message: '请输入用户名' }]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="请输入用户名"
+              />
+            </Form.Item>
 
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loading}
-                      block
-                    >
-                      登录
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-            {
-              key: 'register',
-              label: '注册',
-              children: (
-                <Form
-                  form={registerForm}
-                  name="register"
-                  onFinish={handleRegister}
-                  autoComplete="off"
-                  size="large"
-                >
-                  <Form.Item
-                    name="username"
-                    rules={[
-                      { required: true, message: '请输入用户名' },
-                      { min: 3, message: '用户名至少3个字符' },
-                    ]}
-                  >
-                    <Input
-                      prefix={<UserOutlined />}
-                      placeholder="用户名"
-                    />
-                  </Form.Item>
+            <Form.Item
+              label="登录密码"
+              name="password"
+              rules={[{ required: true, message: '请输入登录密码' }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined />}
+                placeholder="••••••••"
+                visibilityToggle
+              />
+            </Form.Item>
 
-                  <Form.Item
-                    name="email"
-                    rules={[
-                      { required: true, message: '请输入邮箱' },
-                      { type: 'email', message: '邮箱格式不正确' },
-                    ]}
-                  >
-                    <Input
-                      prefix={<MailOutlined />}
-                      placeholder="邮箱"
-                    />
-                  </Form.Item>
+            <Form.Item className={styles.submitButton}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                size="large"
+              >
+                立即登录
+              </Button>
+            </Form.Item>
+          </Form>
 
-                  <Form.Item
-                    name="password"
-                    rules={[
-                      { required: true, message: '请输入密码' },
-                      { min: 6, message: '密码至少6个字符' },
-                    ]}
-                  >
-                    <Input.Password
-                      prefix={<LockOutlined />}
-                      placeholder="密码"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="confirm"
-                    dependencies={['password']}
-                    rules={[
-                      { required: true, message: '请确认密码' },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue('password') === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error('两次输入的密码不一致'));
-                        },
-                      }),
-                    ]}
-                  >
-                    <Input.Password
-                      prefix={<LockOutlined />}
-                      placeholder="确认密码"
-                    />
-                  </Form.Item>
-
-                  <Form.Item>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      loading={loading}
-                      block
-                    >
-                      注册
-                    </Button>
-                  </Form.Item>
-                </Form>
-              ),
-            },
-          ]}
-        />
-      </Card>
+          <div className={styles.footer}>
+            © 2025 Atlas Assistant
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
