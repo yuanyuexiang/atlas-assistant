@@ -99,7 +99,7 @@ export const LoginForm = () => {
             >
               <Input.Password
                 prefix={<LockOutlined />}
-                placeholder="••••••••"
+                placeholder="请输入登录密码"
                 visibilityToggle
               />
             </Form.Item>
