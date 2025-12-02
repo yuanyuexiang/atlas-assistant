@@ -37,17 +37,28 @@ export const useChatStore = create<ChatState>((set) => ({
   loadMessages: async (conversationId) => {
     try {
       const response = await chatApi.getMessages(conversationId);
-      // 确保返回的是数组格式
-      const messagesData = Array.isArray(response.data) 
-        ? response.data 
-        : Array.isArray(response) 
-          ? response 
-          : [];
+      // 后端返回格式：{ success: true, data: { messages: [...], pagination: {...} } }
+      // 类型断言处理后端实际返回的嵌套结构
+      const responseData = response.data as any;
+      const messagesData = responseData?.messages || response.data || [];
+      // 确保是数组格式
+      const rawMessages = Array.isArray(messagesData) ? messagesData : [];
+      
+      // 转换后端消息格式为前端 Message 格式
+      const formattedMessages: Message[] = rawMessages.map((msg: any, index: number) => ({
+        id: msg.id || `msg-${Date.now()}-${index}`,
+        conversation_id: conversationId,
+        role: msg.role || 'user',
+        content: msg.content || '',
+        created_at: msg.timestamp || msg.created_at || new Date().toISOString(),
+        agent_id: msg.agent_id,
+        metadata: msg.metadata,
+      }));
       
       set((state) => ({
         messages: {
           ...state.messages,
-          [conversationId]: messagesData,
+          [conversationId]: formattedMessages,
         },
       }));
     } catch (error: any) {
