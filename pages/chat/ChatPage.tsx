@@ -60,7 +60,8 @@ export default function ChatPage() {
   };
 
   const selectedConversation = conversations.find(c => c.id === conversationId);
-  const messageCount = messages[conversationId]?.length || 0;
+  const currentMessages = messages[conversationId];
+  const messageCount = Array.isArray(currentMessages) ? currentMessages.length : 0;
 
   return (
     <div className={styles.pageContainer}>

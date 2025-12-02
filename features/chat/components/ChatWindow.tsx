@@ -12,6 +12,9 @@ export const ChatWindow = ({ conversationId }: ChatWindowProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, currentStreamingMessage, isStreaming } = useSSEChat(conversationId);
 
+  // 确保 messages 是数组
+  const safeMessages = Array.isArray(messages) ? messages : [];
+
   // 自动滚动到底部
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -19,7 +22,7 @@ export const ChatWindow = ({ conversationId }: ChatWindowProps) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, currentStreamingMessage]);
+  }, [safeMessages, currentStreamingMessage]);
 
   if (!conversationId) {
     return (
@@ -31,13 +34,13 @@ export const ChatWindow = ({ conversationId }: ChatWindowProps) => {
 
   return (
     <div className={styles.container}>
-      {messages.length === 0 && !isStreaming ? (
+      {safeMessages.length === 0 && !isStreaming ? (
         <div className={styles.empty}>
           <Empty description="暂无消息，开始对话吧" />
         </div>
       ) : (
         <>
-          {messages.map((message) => (
+          {safeMessages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
           

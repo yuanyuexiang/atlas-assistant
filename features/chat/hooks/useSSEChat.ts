@@ -86,7 +86,7 @@ export const useSSEChat = (conversationId: string) => {
   };
 
   return {
-    messages: messages[conversationId] || [],
+    messages: Array.isArray(messages[conversationId]) ? messages[conversationId] : [],
     currentStreamingMessage,
     isStreaming,
     sendMessage,

@@ -37,10 +37,17 @@ export const useChatStore = create<ChatState>((set) => ({
   loadMessages: async (conversationId) => {
     try {
       const response = await chatApi.getMessages(conversationId);
+      // 确保返回的是数组格式
+      const messagesData = Array.isArray(response.data) 
+        ? response.data 
+        : Array.isArray(response) 
+          ? response 
+          : [];
+      
       set((state) => ({
         messages: {
           ...state.messages,
-          [conversationId]: response.data || [],
+          [conversationId]: messagesData,
         },
       }));
     } catch (error: any) {
