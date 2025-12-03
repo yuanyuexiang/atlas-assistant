@@ -26,5 +26,5 @@ export const chatApi = {
 
   // 清空对话历史
   clearHistory: (conversationId: string) =>
-    del(`/chat/${conversationId}/clear-history`),
+    del(`/chat/${conversationId}/history`),
 };
