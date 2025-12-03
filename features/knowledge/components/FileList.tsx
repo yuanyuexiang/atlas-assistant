@@ -1,4 +1,4 @@
-import { Table, Button, Popconfirm, Tag, Empty, Tooltip, Progress } from 'antd';
+import { Table, Button, Popconfirm, Tag, Empty, Tooltip } from 'antd';
 import { DeleteOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { DocumentInfo, DocumentStatus } from '@/types/models';
