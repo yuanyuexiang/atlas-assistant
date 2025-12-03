@@ -55,6 +55,11 @@ export const useChatStore = create<ChatState>((set) => ({
         metadata: msg.metadata,
       }));
       
+      // 按时间顺序排序，最早的消息在前
+      formattedMessages.sort((a, b) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      
       set((state) => ({
         messages: {
           ...state.messages,
