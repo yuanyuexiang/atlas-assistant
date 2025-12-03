@@ -7,12 +7,13 @@ import {
   CloudUploadOutlined, DeleteOutlined, ReloadOutlined, 
   FileTextOutlined, MoreOutlined, SyncOutlined, DownloadOutlined, ClearOutlined,
   FileOutlined, DatabaseOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined, CloseCircleOutlined
 } from '@ant-design/icons';
 import type { UploadProps, MenuProps, TableColumnsType } from 'antd';
 import { useKnowledge } from '@/features/knowledge/hooks/useKnowledge';
 import { useAgentList } from '@/features/agent/hooks/useAgent';
 import type { DocumentInfo, Agent } from '@/types/models';
+import type { DocumentStatus } from '@/types/models';
 import styles from './KnowledgePage.module.css';
 
 const { Search } = Input;
@@ -360,6 +361,42 @@ export const KnowledgePage = () => {
       ),
     },
     {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 150,
+      filters: [
+        { text: '已就绪', value: 'ready' },
+        { text: '处理中', value: 'processing' },
+        { text: '失败', value: 'failed' },
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (status: DocumentStatus, record) => {
+        if (status === 'ready') {
+          return (
+            <Tag color="success" icon={<CheckCircleOutlined />}>
+              已就绪
+            </Tag>
+          );
+        } else if (status === 'failed') {
+          return (
+            <Tag color="error" icon={<CloseCircleOutlined />}>
+              <span style={{ cursor: 'pointer' }} title={record.error_message || '处理失败'}>
+                失败
+              </span>
+            </Tag>
+          );
+        } else if (status === 'processing') {
+          return (
+            <Tag color="processing" icon={<SyncOutlined spin />}>
+              处理中 ({record.processing_progress}%)
+            </Tag>
+          );
+        }
+        return <Tag>未知</Tag>;
+      },
+    },
+    {
       title: '大小',
       dataIndex: 'file_size_mb',
       key: 'file_size_mb',
@@ -393,6 +430,12 @@ export const KnowledgePage = () => {
       key: 'chunks_count',
       width: 100,
       sorter: (a, b) => a.chunks_count - b.chunks_count,
+      render: (count: number, record) => {
+        if (record.status === 'processing') {
+          return <Tag color="default">处理中...</Tag>;
+        }
+        return count;
+      },
     },
     {
       title: '上传时间',
@@ -408,8 +451,16 @@ export const KnowledgePage = () => {
       width: 80,
       fixed: 'right',
       render: (_: any, record) => (
-        <Dropdown menu={getActionMenu(record)} trigger={['click']}>
-          <Button type="text" icon={<MoreOutlined />} />
+        <Dropdown 
+          menu={getActionMenu(record)} 
+          trigger={['click']}
+          disabled={record.status === 'processing'}
+        >
+          <Button 
+            type="text" 
+            icon={<MoreOutlined />} 
+            disabled={record.status === 'processing'}
+          />
         </Dropdown>
       ),
     },
