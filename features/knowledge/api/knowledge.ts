@@ -62,6 +62,9 @@ export const knowledgeApi = {
       file_size_mb: parseFloat(file.file_size_mb || file.size_mb || file.size || 0),
       chunks_count: parseInt(file.chunks_count || file.chunks || file.chunk_count || 0),
       upload_time: file.upload_time || file.uploaded_at || file.created_at || new Date().toISOString(),
+      status: file.status || 'ready',
+      processing_progress: parseInt(file.processing_progress || 100),
+      error_message: file.error_message || null,
     }));
     
     console.log('[Knowledge API] 规范化后的文件列表:', normalizedFiles);

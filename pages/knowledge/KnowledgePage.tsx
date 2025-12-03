@@ -70,6 +70,30 @@ export const KnowledgePage = () => {
     }
   }, [selectedAgentId, fetchFiles, fetchStats, message]);
 
+  // 自动刷新处理中的文件
+  useEffect(() => {
+    if (!selectedAgentId || files.length === 0) return;
+    
+    // 检查是否有处理中的文件
+    const hasProcessingFiles = files.some(f => f.status === 'processing');
+    
+    if (hasProcessingFiles) {
+      // 每3秒刷新一次
+      const timer = setInterval(() => {
+        fetchFiles(selectedAgentId).catch(error => {
+          if (error.response?.status !== 404) {
+            console.error('[KnowledgePage] 自动刷新失败:', error);
+          }
+        });
+        fetchStats(selectedAgentId).catch(error => {
+          console.error('[KnowledgePage] 自动刷新统计失败:', error);
+        });
+      }, 3000);
+      
+      return () => clearInterval(timer);
+    }
+  }, [selectedAgentId, files, fetchFiles, fetchStats]);
+
   // 格式化文件大小
   const formatFileSize = (sizeMB: number): string => {
     if (sizeMB < 0.01) return '< 0.01 MB';

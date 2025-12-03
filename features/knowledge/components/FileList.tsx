@@ -1,7 +1,7 @@
-import { Table, Button, Popconfirm, Tag, Empty } from 'antd';
-import { DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Table, Button, Popconfirm, Tag, Empty, Tooltip, Progress } from 'antd';
+import { DeleteOutlined, FileTextOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import type { DocumentInfo } from '@/types/models';
+import type { DocumentInfo, DocumentStatus } from '@/types/models';
 import { formatRelativeTime } from '@/lib/utils/format';
 import styles from './FileList.module.css';
 
@@ -13,6 +13,38 @@ interface FileListProps {
   onRebuild?: () => void;
   agentName?: string;
 }
+
+// 状态徽章组件
+const FileStatusBadge = ({ status, progress, errorMessage }: { 
+  status: DocumentStatus; 
+  progress: number; 
+  errorMessage?: string | null;
+}) => {
+  if (status === 'ready') {
+    return (
+      <Tag color="success" icon={<CheckCircleOutlined />}>
+        已就绪
+      </Tag>
+    );
+  } else if (status === 'failed') {
+    return (
+      <Tooltip title={errorMessage || '处理失败'}>
+        <Tag color="error" icon={<CloseCircleOutlined />}>
+          失败
+        </Tag>
+      </Tooltip>
+    );
+  } else if (status === 'processing') {
+    return (
+      <Tooltip title={`处理进度: ${progress}%`}>
+        <Tag color="processing" icon={<SyncOutlined spin />}>
+          处理中 ({progress}%)
+        </Tag>
+      </Tooltip>
+    );
+  }
+  return null;
+};
 
 export const FileList = ({
   files,
@@ -34,6 +66,25 @@ export const FileList = ({
       ),
     },
     {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 150,
+      render: (status: DocumentStatus, record) => (
+        <FileStatusBadge 
+          status={status} 
+          progress={record.processing_progress}
+          errorMessage={record.error_message}
+        />
+      ),
+      filters: [
+        { text: '已就绪', value: 'ready' },
+        { text: '处理中', value: 'processing' },
+        { text: '失败', value: 'failed' },
+      ],
+      onFilter: (value, record) => record.status === value,
+    },
+    {
       title: '文件大小',
       dataIndex: 'file_size_mb',
       key: 'file_size_mb',
@@ -46,9 +97,12 @@ export const FileList = ({
       dataIndex: 'chunks_count',
       key: 'chunks_count',
       width: 120,
-      render: (count: number) => (
-        <Tag color="blue">{count} 个分块</Tag>
-      ),
+      render: (count: number, record) => {
+        if (record.status === 'processing') {
+          return <Tag color="default">处理中...</Tag>;
+        }
+        return <Tag color="blue">{count} 个分块</Tag>;
+      },
       sorter: (a, b) => a.chunks_count - b.chunks_count,
     },
     {
@@ -71,12 +125,14 @@ export const FileList = ({
           onConfirm={() => onDelete(record.file_id, record.filename)}
           okText="确认"
           cancelText="取消"
+          disabled={record.status === 'processing'}
         >
           <Button
             type="link"
             danger
             icon={<DeleteOutlined />}
             size="small"
+            disabled={record.status === 'processing'}
           >
             删除
           </Button>

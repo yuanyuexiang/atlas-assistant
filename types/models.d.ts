@@ -36,12 +36,17 @@ export interface KnowledgeBase {
   files: DocumentInfo[];
 }
 
+export type DocumentStatus = 'processing' | 'ready' | 'failed';
+
 export interface DocumentInfo {
   file_id: string;
   filename: string;
   file_size_mb: number;
   chunks_count: number;
   upload_time: string;
+  status: DocumentStatus;
+  processing_progress: number;
+  error_message?: string | null;
 }
 
 // 客服类型

@@ -329,7 +329,7 @@ Authorization: Bearer {token}
 }
 ```
 
-**响应**：
+**响应**（✨ files 数组包含状态字段）：
 ```json
 {
   "id": "agent_uuid",
@@ -341,16 +341,47 @@ Authorization: Bearer {token}
   "description": "智能客服说明",
   "knowledge_base": {
     "collection_name": "kb_customer_service",
-    "total_files": 0,
-    "total_vectors": 0,
-    "total_size_mb": 0.0,
-    "files": []
+    "total_files": 2,
+    "total_vectors": 157,
+    "total_size_mb": 1.25,
+    "files": [
+      {
+        "id": "c6695de6-68fb-4fb9-875a-33802df96a40",
+        "filename": "9b7ebf3a_test_status.txt",
+        "upload_time": "2025-12-03 15:30:00",
+        "file_size": 1024,
+        "chunks_count": 1,
+        "file_type": "txt",
+        "status": "ready",                    // ✨ 新增：文件状态
+        "processing_progress": 100,           // ✨ 新增：处理进度
+        "error_message": null,                // ✨ 新增：错误信息
+        "updated_at": "2025-12-03 15:30:05"  // ✨ 新增：更新时间
+      },
+      {
+        "id": "abc-def-123",
+        "filename": "7e47b4ea_empty.txt",
+        "upload_time": "2025-12-03 15:31:00",
+        "file_size": 0,
+        "chunks_count": 0,
+        "file_type": "txt",
+        "status": "failed",                   // ✨ 失败状态
+        "processing_progress": 0,
+        "error_message": "向量化失败：所有文本块都未能添加到向量数据库。\n可能原因：\n1. Embedding API 配置错误或 API Key 无效\n2. 网络连接问题\n3. 向量数据库连接异常",
+        "updated_at": "2025-12-03 15:31:02"
+      }
+    ]
   },
   "created_at": "2025-01-19T08:00:00Z",
   "updated_at": "2025-01-19T08:00:00Z",
   "conversations_using": []  // 使用该智能体的客服列表
 }
 ```
+
+**文件状态字段说明**：
+- `status`: 文件处理状态（`processing` | `ready` | `failed`）
+- `processing_progress`: 处理进度 0-100
+- `error_message`: 失败时的错误详情
+- `updated_at`: 状态最后更新时间
 
 ### 2.2 获取智能体列表
 
@@ -608,7 +639,7 @@ Content-Type: multipart/form-data
 const formData = new FormData();
 formData.append('file', fileObject);  // PDF/TXT/MD 文件
 
-fetch('https://atlas.matrix-net.tech/atlas/api/knowledge-base/customer-service/documents', {
+fetch('https://atlas.matrix-net.tech/atlas/api/knowledge-base/{agent_id}/documents', {
   method: 'POST',
   headers: {
     'Authorization': `Bearer ${token}`
@@ -617,26 +648,131 @@ fetch('https://atlas.matrix-net.tech/atlas/api/knowledge-base/customer-service/d
 });
 ```
 
-**响应**：
+**响应**（✨ 新增状态字段）：
 ```json
 {
-  "file_id": "doc_20250119_001",
-  "filename": "product_manual.pdf",
+  "file_id": "c6695de6-68fb-4fb9-875a-33802df96a40",
+  "filename": "9b7ebf3a_product_manual.pdf",
   "chunks_count": 156,
-  "upload_time": "2025-01-19T08:00:00Z"
+  "upload_time": "2025-12-03 15:30:00",
+  "status": "ready",                    // ✨ 新增：文件处理状态
+  "processing_progress": 100,            // ✨ 新增：处理进度（0-100）
+  "error_message": null                  // ✨ 新增：错误信息（失败时显示）
+}
+```
+
+**状态说明**：
+
+| status 值 | 含义 | progress | 说明 |
+|-----------|------|----------|------|
+| `processing` | 处理中 | 0-99 | 文件正在解析和向量化 |
+| `ready` | 已就绪 | 100 | 文件处理完成，可以使用 |
+| `failed` | 失败 | 0 | 处理失败，查看 error_message |
+
+**前端实现建议**：
+
+```javascript
+// 1. 上传文件
+async function uploadDocument(agentId, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(`/atlas/api/knowledge-base/${agentId}/documents`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: formData
+  });
+  
+  const result = await response.json();
+  
+  // 2. 立即显示上传结果
+  if (result.status === 'ready') {
+    showSuccess(`文件 ${result.filename} 上传成功！`);
+  } else if (result.status === 'failed') {
+    showError(`上传失败: ${result.error_message}`);
+  } else if (result.status === 'processing') {
+    // 对于较大文件，可能需要轮询
+    await pollFileStatus(agentId, result.file_id);
+  }
+}
+
+// 3. 轮询文件状态（可选，用于大文件）
+async function pollFileStatus(agentId, fileId) {
+  const maxAttempts = 30;  // 最多轮询 30 次（60 秒）
+  
+  for (let i = 0; i < maxAttempts; i++) {
+    await sleep(2000);  // 每 2 秒查询一次
+    
+    const agent = await fetch(`/atlas/api/agents/${agentId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json());
+    
+    const file = agent.knowledge_base.files.find(f => f.id === fileId);
+    
+    if (file.status === 'ready') {
+      showSuccess(`文件 ${file.filename} 处理完成！`);
+      break;
+    } else if (file.status === 'failed') {
+      showError(`处理失败: ${file.error_message}`);
+      break;
+    }
+    
+    // 更新进度条
+    updateProgress(file.processing_progress);
+  }
+}
+```
+
+**UI 展示建议**：
+
+```jsx
+// 文件状态徽章
+function FileStatusBadge({ status, progress, errorMessage }) {
+  if (status === 'ready') {
+    return <Badge color="green">✅ 已就绪</Badge>;
+  } else if (status === 'failed') {
+    return (
+      <Tooltip title={errorMessage}>
+        <Badge color="red">❌ 失败</Badge>
+      </Tooltip>
+    );
+  } else if (status === 'processing') {
+    return (
+      <Badge color="yellow">
+        ⏳ 处理中 ({progress}%)
+      </Badge>
+    );
+  }
+}
+
+// 文件列表项
+function FileListItem({ file }) {
+  return (
+    <div className="file-item">
+      <span>{file.filename}</span>
+      <FileStatusBadge 
+        status={file.status} 
+        progress={file.processing_progress}
+        errorMessage={file.error_message}
+      />
+      <span>{file.chunks_count} 个分块</span>
+    </div>
+  );
 }
 ```
 
 **限制**：
 - 最大文件大小：10MB
 - 支持格式：PDF、TXT、MD
+- 处理时间：小文件 <5 秒，大文件可能需要 10-30 秒
 
 **注意事项**：
 - ⚠️ 新创建的智能体需要等待 Milvus 初始化 collection（约 1-3 秒）
-- ✅ 上传后文档会自动进行文本切分和向量化
-- 📊 可通过统计接口查看处理进度
+- ✅ 上传后文档会自动进行文本切分和向量化（同步处理）
+- 📊 **推荐做法**：上传后立即检查返回的 `status` 字段，无需额外轮询
 - 🔧 已修复：文件名不再有智能体前缀污染（使用短 UUID）
 - 🔧 已修复：向量化失败问题（API 配置和错误处理优化）
+- ✨ **新功能**：失败时会自动记录状态，可在文件列表中查看详细错误
 
 **文件名格式**：
 - 之前：`test_agent_1763997087284_document.txt`（带 agent 前缀）
@@ -1092,7 +1228,92 @@ function ChatComponent() {
 
 ---
 
-### 5.3 清空对话历史
+### 5.3 获取聊天历史
+
+```http
+GET https://atlas.matrix-net.tech/atlas/api/chat/{conversation_id}/messages?page=1&page_size=50
+Authorization: Bearer {token}
+```
+
+> **参数说明**: `conversation_id` 是客服的 UUID
+
+**查询参数**：
+- `page`: 页码（从 1 开始，默认 1）
+- `page_size`: 每页数量（默认 50，最大 100）
+
+**响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "messages": [
+      {
+        "role": "assistant",
+        "content": "我可以帮你解答关于产品的问题。",
+        "timestamp": 1733209845
+      },
+      {
+        "role": "user",
+        "content": "你们的产品有什么特点？",
+        "timestamp": 1733209842
+      },
+      {
+        "role": "assistant",
+        "content": "我们的产品主要有以下特点：...",
+        "timestamp": 1733209840
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "page_size": 50,
+      "total": 3,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+**字段说明**：
+- `role`: 消息角色（`user` 用户消息 / `assistant` AI 回复）
+- `content`: 消息内容
+- `timestamp`: Unix 时间戳（秒，整数，例如 `1733209845`）
+
+**说明**：
+- 返回当前会话的所有历史消息（按时间倒序，最新的在前）
+- 聊天历史存储在内存中，**服务重启后会清空**
+- `timestamp` 为 Unix 时间戳（秒），前端需要乘以 1000 转换为毫秒：`new Date(timestamp * 1000)`
+- 同一智能体的所有客服共享聊天历史
+
+**前端示例**：
+```javascript
+async function getChatHistory(conversationId, page = 1, pageSize = 50) {
+  const response = await fetch(
+    `https://atlas.matrix-net.tech/atlas/api/chat/${conversationId}/messages?page=${page}&page_size=${pageSize}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }
+  );
+  
+  const result = await response.json();
+  return result.data;
+}
+
+// 使用示例
+const { messages, pagination } = await getChatHistory('a9342048-b75f-410d-9973-5f2d52b81f48');
+console.log(`总共 ${pagination.total} 条消息`);
+
+// 格式化时间戳（Unix 时间戳转换为本地时间）
+messages.forEach(msg => {
+  const time = msg.timestamp ? new Date(msg.timestamp * 1000).toLocaleString('zh-CN') : '未知时间';
+  console.log(`[${time}] ${msg.role}: ${msg.content}`);
+});
+```
+
+---
+
+### 5.4 清空对话历史
 
 ```http
 DELETE https://atlas.matrix-net.tech/atlas/api/chat/{conversation_id}/history
@@ -1449,63 +1670,269 @@ if (Date.now() > tokenExpiry) {
 }
 ```
 
+**原因**: 文件使用非 UTF-8 编码（如 GBK）
+
+**解决方案**: 
+- 后端已支持多编码自动检测（UTF-8, GBK, GB2312, GB18030）
+- 如果仍失败，请检查文件是否损坏
+- 大文件会自动分块处理（单块 < 400 字符）
+
+### ❌ 错误 5: 知识库数据不一致
+
+**现象**:
+```
+文件总数: 0
+向量总数: 3,995 ❌
+存储大小: 0.00MB
+```
+
+**原因**: 删除文件时元数据被删除，但向量数据残留
+
+**检测方法**:
+```javascript
+// 获取统计信息
+const stats = await fetch(`/atlas/api/knowledge-base/${agentId}/stats`)
+  .then(r => r.json());
+
+if (!stats.data.is_consistent) {
+  console.warn('数据不一致:', stats.data.warning);
+  // 显示警告提示用户
+}
+```
+
+**解决方案 1: 自动修复**（推荐）
+```javascript
+// 调用修复接口
+const result = await fetch(
+  `/atlas/api/knowledge-base/${agentId}/fix-inconsistency`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }
+).then(r => r.json());
+
+console.log('修复结果:', result);
+// {
+//   success: true,
+//   message: "数据不一致已修复，知识库已清空",
+//   before: { files: 0, vectors: 3995 },
+//   after: { files: 0, vectors: 0 }
+// }
+```
+
+**解决方案 2: 手动清空**
+```javascript
+// 完全清空知识库
+await fetch(`/atlas/api/knowledge-base/${agentId}/clear`, {
+  method: 'DELETE',
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+});
+```
+
+**预防措施**:
+- 后端已增强级联删除机制
+- 删除文件时会同时清理向量数据和元数据
+- 统计接口会自动检测不一致并返回警告
+
+### ❌ 错误 6: 如何处理文件上传失败？
+
+**场景**: 文件上传后 `status` 返回 `failed`
+
+**错误示例**:
+```json
+{
+  "file_id": "abc-123",
+  "filename": "document.txt",
+  "status": "failed",
+  "processing_progress": 0,
+  "error_message": "向量化失败：所有文本块都未能添加到向量数据库。\n可能原因：\n1. Embedding API 配置错误..."
+}
+```
+
+**解决方案**:
+```javascript
+async function handleUpload(agentId, file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await fetch(
+    `/atlas/api/knowledge-base/${agentId}/documents`,
+    {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    }
+  );
+  
+  const result = await response.json();
+  
+  // 检查状态
+  if (result.status === 'failed') {
+    // 显示详细错误
+    showError(`上传失败: ${result.error_message}`);
+    
+    // 常见失败原因及处理
+    if (result.error_message.includes('文本块都未能添加')) {
+      // 空文件或无法解析的文件
+      showTip('请检查文件内容是否为空或格式是否正确');
+    } else if (result.error_message.includes('文件不存在')) {
+      // 文件路径问题（不太可能）
+      showTip('请重新选择文件上传');
+    }
+    
+    // 可选：自动删除失败的文件记录
+    await deleteDocument(agentId, result.file_id);
+    
+    return null;
+  } else if (result.status === 'ready') {
+    showSuccess(`文件上传成功！已生成 ${result.chunks_count} 个分块`);
+    return result;
+  }
+}
+```
+
+**常见失败原因**:
+1. **空文件**: 文件内容为空或只有空白字符
+2. **格式错误**: PDF 损坏、编码错误（已支持多编码自动检测）
+3. **文件过大**: 超过 10MB 限制
+4. **API 配置**: Embedding API 暂时不可用（罕见）
+
+**前端 UI 建议**:
+```jsx
+function FileUploadResult({ file }) {
+  if (file.status === 'failed') {
+    return (
+      <Alert severity="error">
+        <AlertTitle>❌ 文件处理失败</AlertTitle>
+        <Typography variant="body2">
+          文件名: {file.filename}
+        </Typography>
+        <Accordion>
+          <AccordionSummary>查看详细错误</AccordionSummary>
+          <AccordionDetails>
+            <pre>{file.error_message}</pre>
+          </AccordionDetails>
+        </Accordion>
+        <Button onClick={() => deleteFile(file.id)}>
+          删除失败记录
+        </Button>
+      </Alert>
+    );
+  }
+  
+  return <FileSuccessCard file={file} />;
+}
+```
+
+### ❌ 错误 7: 文件上传后如何确认状态？
+
+**推荐做法**: 检查上传响应的 `status` 字段，无需轮询
+
+```javascript
+// ✅ 推荐：直接检查响应
+const result = await uploadFile(agentId, file);
+
+if (result.status === 'ready') {
+  console.log('✅ 文件已就绪，可立即使用');
+  refreshFileList();
+} else if (result.status === 'failed') {
+  console.error('❌ 处理失败:', result.error_message);
+}
+
+// ⚠️ 不推荐：轮询（目前所有文件都是同步处理，< 10 秒完成）
+// 除非未来支持异步处理大文件
+```
+
+**何时需要轮询？**
+
+目前**不需要轮询**，因为：
+- 文件处理是同步的
+- 上传响应直接包含最终状态
+- 小文件 <5 秒，大文件 <30 秒
+
+如果未来支持异步处理，可使用：
+```javascript
+async function waitForReady(agentId, fileId) {
+  for (let i = 0; i < 30; i++) {
+    await sleep(2000);
+    const agent = await getAgentDetail(agentId);
+    const file = agent.knowledge_base.files.find(f => f.id === fileId);
+    
+    if (file.status !== 'processing') {
+      return file;
+    }
+  }
+  throw new Error('处理超时');
+}
+```
+
+### ❌ 错误 8: EventSource 不支持 POST
+
+**错误信息**:
+```
+EventSource 只支持 GET 请求
+```
+
+**原因**: 浏览器原生 EventSource API 只支持 GET 方法
+
+**解决方案**: 使用 fetch 手动处理流式响应
+
+**❌ 错误代码**:
+```javascript
+const eventSource = new EventSource(
+  `/atlas/api/chat/${conversationId}/message/stream`,
+  {
+    method: 'POST',  // ❌ EventSource 不支持 POST
+    body: JSON.stringify({ content: '你好' })
+  }
+);
+```
+
+**✅ 正确代码**:
+```javascript
+const response = await fetch(
+  `/atlas/api/chat/${conversationId}/message/stream`,
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ content: '你好' })
+  }
+);
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  
+  const text = decoder.decode(value);
+  const lines = text.split('\n');
+  
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = line.slice(6);
+      if (data === '[DONE]') break;
+      console.log('收到:', data);
+    }
+  }
+}
+```
+
+### ❌ 错误 9: 文件编码问题（已修复）
+
 **原因**: 文件编码不是 UTF-8（已修复，系统现支持多编码）
 
 **支持的编码**: UTF-8, GBK, GB2312, GB18030, Latin-1
 
 **解决方案**: 无需处理，后端自动检测编码
-
-### ❌ 错误 5: EventSource 无法发送 POST 请求
-
-**问题**: EventSource 只支持 GET 请求，无法用于流式聊天
-
-**解决方案**: 使用 fetch + ReadableStream
-
-```javascript
-async function streamChat(conversationId, message, token) {
-  const response = await fetch(
-    `https://atlas.matrix-net.tech/atlas/api/chat/${conversationId}/message/stream`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ content: message })
-    }
-  );
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop(); // 保留不完整的行
-    
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.content) {
-            console.log(data.content); // 逐字显示
-          }
-          if (data.done) {
-            console.log('Stream completed');
-            return;
-          }
-        } catch (e) {
-          console.error('Parse error:', e);
-        }
-      }
-    }
-  }
-}
-```
 
 ---
 
@@ -1958,6 +2385,258 @@ const kbManager = new KnowledgeBaseManager(agentId, token);
 await kbManager.uploadMultipleFiles(files);
 ```
 
+### 6. 文件状态管理最佳实践 ✨
+
+```javascript
+class FileStatusManager {
+  constructor(agentId, token) {
+    this.agentId = agentId;
+    this.token = token;
+  }
+
+  /**
+   * 上传文件并处理所有状态
+   */
+  async uploadWithStatusHandling(file, callbacks = {}) {
+    const {
+      onStart = () => {},
+      onSuccess = () => {},
+      onError = () => {},
+      onProgress = () => {}
+    } = callbacks;
+
+    try {
+      onStart();
+      onProgress(0); // 开始上传
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(
+        `/atlas/api/knowledge-base/${this.agentId}/documents`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${this.token}` },
+          body: formData
+        }
+      );
+
+      const result = await response.json();
+
+      // 检查上传响应状态
+      if (result.status === 'ready') {
+        onProgress(100);
+        onSuccess(result);
+        return {
+          success: true,
+          file: result
+        };
+      } else if (result.status === 'failed') {
+        onError(result.error_message);
+        return {
+          success: false,
+          error: result.error_message,
+          file: result
+        };
+      } else if (result.status === 'processing') {
+        // 如果未来支持异步处理，在这里轮询
+        const finalResult = await this.waitForReady(result.file_id, onProgress);
+        
+        if (finalResult.status === 'ready') {
+          onSuccess(finalResult);
+          return { success: true, file: finalResult };
+        } else {
+          onError(finalResult.error_message);
+          return { success: false, error: finalResult.error_message };
+        }
+      }
+    } catch (error) {
+      onError(error.message);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * 轮询文件状态（可选，用于未来的异步处理）
+   */
+  async waitForReady(fileId, onProgress = () => {}) {
+    const maxAttempts = 30; // 最多 60 秒
+    
+    for (let i = 0; i < maxAttempts; i++) {
+      await this.sleep(2000);
+      
+      const agent = await this.getAgentDetail();
+      const file = agent.knowledge_base.files.find(f => f.id === fileId);
+      
+      if (!file) {
+        throw new Error('文件不存在');
+      }
+      
+      // 更新进度
+      onProgress(file.processing_progress);
+      
+      if (file.status === 'ready' || file.status === 'failed') {
+        return file;
+      }
+    }
+    
+    throw new Error('处理超时');
+  }
+
+  async getAgentDetail() {
+    const response = await fetch(
+      `/atlas/api/agents/${this.agentId}`,
+      { headers: { 'Authorization': `Bearer ${this.token}` } }
+    );
+    return response.json();
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * 批量上传文件
+   */
+  async uploadBatch(files, onFileComplete = () => {}) {
+    const results = [];
+    
+    for (const file of files) {
+      const result = await this.uploadWithStatusHandling(file, {
+        onSuccess: (fileResult) => {
+          console.log(`✅ ${file.name} 上传成功`);
+          onFileComplete(file.name, true, fileResult);
+        },
+        onError: (error) => {
+          console.error(`❌ ${file.name} 上传失败: ${error}`);
+          onFileComplete(file.name, false, { error });
+        }
+      });
+      
+      results.push(result);
+    }
+    
+    return results;
+  }
+
+  /**
+   * 获取所有失败的文件
+   */
+  async getFailedFiles() {
+    const agent = await this.getAgentDetail();
+    return agent.knowledge_base.files.filter(f => f.status === 'failed');
+  }
+
+  /**
+   * 重试失败的文件（需要重新上传）
+   */
+  async retryFailedFiles() {
+    const failedFiles = await this.getFailedFiles();
+    console.log(`发现 ${failedFiles.length} 个失败文件`);
+    
+    // 注意：需要用户重新选择文件，这里只是示例
+    for (const file of failedFiles) {
+      console.log(`需要重新上传: ${file.filename}`);
+      // await this.deleteDocument(file.id); // 可选：删除失败记录
+    }
+    
+    return failedFiles;
+  }
+
+  async deleteDocument(fileId) {
+    await fetch(
+      `/atlas/api/knowledge-base/${this.agentId}/documents/${fileId}`,
+      {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${this.token}` }
+      }
+    );
+  }
+}
+
+// React 组件示例
+function FileUploadComponent({ agentId, token }) {
+  const [uploadProgress, setUploadProgress] = React.useState({});
+  const [uploadResults, setUploadResults] = React.useState([]);
+  const fileManager = new FileStatusManager(agentId, token);
+
+  const handleUpload = async (files) => {
+    const fileArray = Array.from(files);
+    
+    // 初始化进度
+    const progress = {};
+    fileArray.forEach(file => {
+      progress[file.name] = { status: 'uploading', progress: 0 };
+    });
+    setUploadProgress(progress);
+
+    // 上传文件
+    for (const file of fileArray) {
+      await fileManager.uploadWithStatusHandling(file, {
+        onStart: () => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: { status: 'uploading', progress: 0 }
+          }));
+        },
+        onProgress: (percent) => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: { status: 'uploading', progress: percent }
+          }));
+        },
+        onSuccess: (result) => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: { status: 'success', progress: 100, result }
+          }));
+          setUploadResults(prev => [...prev, result]);
+        },
+        onError: (error) => {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: { status: 'failed', progress: 0, error }
+          }));
+        }
+      });
+    }
+  };
+
+  return (
+    <div>
+      <input 
+        type="file" 
+        multiple 
+        onChange={(e) => handleUpload(e.target.files)} 
+      />
+      
+      {Object.entries(uploadProgress).map(([name, data]) => (
+        <div key={name}>
+          <span>{name}</span>
+          {data.status === 'success' && <span>✅ 成功</span>}
+          {data.status === 'failed' && (
+            <span>❌ 失败: {data.error}</span>
+          )}
+          {data.status === 'uploading' && (
+            <ProgressBar value={data.progress} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**关键点**：
+1. ✅ **同步处理**：目前所有文件都是同步处理的，上传响应直接包含最终状态
+2. ✅ **无需轮询**：检查 `response.status` 即可，不需要额外的状态查询
+3. ✅ **错误处理**：失败时自动记录到元数据，可在列表中查看
+4. ✅ **进度反馈**：虽然是同步的，但可以用上传进度 + 固定的处理时间估算
+5. ⚠️ **未来扩展**：如果支持异步处理，可使用 `waitForReady()` 方法轮询
+
 ---
 
 ## 测试示例
@@ -2150,6 +2829,31 @@ curl https://atlas.matrix-net.tech/atlas/health
 ---
 
 ## 更新日志
+
+### v0.3.1 (2025-12-03) ✨
+
+**🆕 新功能**：
+- ✅ **文件状态管理**：上传接口新增 `status`、`processing_progress`、`error_message` 字段
+- ✅ **失败记录追踪**：失败的文件会自动记录状态和详细错误信息
+- ✅ **实时状态反馈**：上传响应直接包含处理状态，无需轮询
+- ✅ **完善的错误处理**：失败原因分类（空文件、格式错误、API 问题等）
+
+**📝 API 变更**：
+- `POST /knowledge-base/{agent_id}/documents` 响应新增 3 个字段
+- `GET /agents/{agent_id}` 中的 files 数组新增状态字段
+- 向后兼容：老版本前端仍可正常使用（新字段可选）
+
+**📚 文档更新**：
+- 新增"文件状态管理最佳实践"章节
+- 新增 FAQ："如何处理文件上传失败"
+- 新增 FAQ："文件上传后如何确认状态"
+- 更新上传接口说明和响应示例
+- 添加 React 组件示例代码
+
+**🎯 使用建议**：
+- 推荐做法：检查上传响应的 `status` 字段即可
+- 无需轮询：所有文件都是同步处理（< 30 秒）
+- 失败处理：显示 `error_message` 并提供重试选项
 
 ### v0.3.0 (2025-11-28)
 
