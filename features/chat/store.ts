@@ -45,15 +45,31 @@ export const useChatStore = create<ChatState>((set) => ({
       const rawMessages = Array.isArray(messagesData) ? messagesData : [];
       
       // 转换后端消息格式为前端 Message 格式
-      const formattedMessages: Message[] = rawMessages.map((msg: any, index: number) => ({
-        id: msg.id || `msg-${Date.now()}-${index}`,
-        conversation_id: conversationId,
-        role: msg.role || 'user',
-        content: msg.content || '',
-        created_at: msg.timestamp || msg.created_at || new Date().toISOString(),
-        agent_id: msg.agent_id,
-        metadata: msg.metadata,
-      }));
+      const formattedMessages: Message[] = rawMessages.map((msg: any, index: number) => {
+        // 处理时间戳：后端可能返回数字时间戳或 ISO 字符串
+        let createdAt: string;
+        if (msg.timestamp) {
+          // timestamp 是数字，需要转换
+          const timestamp = typeof msg.timestamp === 'number' ? msg.timestamp : parseInt(msg.timestamp);
+          // 判断是秒级还是毫秒级时间戳
+          const timestampMs = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+          createdAt = new Date(timestampMs).toISOString();
+        } else if (msg.created_at) {
+          createdAt = msg.created_at;
+        } else {
+          createdAt = new Date().toISOString();
+        }
+        
+        return {
+          id: msg.id || `msg-${Date.now()}-${index}`,
+          conversation_id: conversationId,
+          role: msg.role || 'user',
+          content: msg.content || '',
+          created_at: createdAt,
+          agent_id: msg.agent_id,
+          metadata: msg.metadata,
+        };
+      });
       
       // 按时间顺序排序，最早的消息在前
       formattedMessages.sort((a, b) => 
