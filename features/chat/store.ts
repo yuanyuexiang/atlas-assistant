@@ -71,10 +71,8 @@ export const useChatStore = create<ChatState>((set) => ({
         };
       });
       
-      // 按时间顺序排序，最早的消息在前
-      formattedMessages.sort((a, b) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
+      // 后端返回的是倒序（最新在前），需要反转为正序（最新在后）
+      formattedMessages.reverse();
       
       set((state) => ({
         messages: {
