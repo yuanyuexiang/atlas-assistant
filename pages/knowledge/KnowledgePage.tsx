@@ -139,6 +139,18 @@ export const KnowledgePage = () => {
     try {
       await uploadFiles(selectedAgentId, fileList);
       message.success(`成功上传 ${fileList.length} 个文件`);
+      
+      // 立即刷新文件列表和统计数据
+      await Promise.all([
+        fetchFiles(selectedAgentId).catch(error => {
+          if (error.response?.status !== 404) {
+            console.error('[KnowledgePage] 刷新文件列表失败:', error);
+          }
+        }),
+        fetchStats(selectedAgentId).catch(error => {
+          console.error('[KnowledgePage] 刷新统计失败:', error);
+        })
+      ]);
     } catch (error: any) {
       message.error(error.response?.data?.detail || '文件上传失败');
     }
