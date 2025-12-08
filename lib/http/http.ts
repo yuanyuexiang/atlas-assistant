@@ -15,6 +15,9 @@ export const http = axios.create({
   timeout: 300000, // 5分钟，用于文件上传
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
 });
 
