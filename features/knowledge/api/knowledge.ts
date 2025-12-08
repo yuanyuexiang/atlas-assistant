@@ -106,43 +106,42 @@ export const knowledgeApi = {
     const data = response.data;
     
     console.log('[Knowledge API] 获取统计数据 - 原始响应:', data);
-    console.log('[Knowledge API] data.data 内容:', data.data);
-    console.log('[Knowledge API] data.data 的所有键:', data.data ? Object.keys(data.data) : 'null');
     
-    // 处理可能的嵌套结构
-    let stats: any = {};
+    // 后端返回的是向量数据库统计：{collection_name, total_vectors, exists}
+    // 需要从文件列表中计算实际的文件统计
     
-    if (data && typeof data === 'object') {
-      if ('data' in data && typeof data.data === 'object') {
-        // 格式: {success: true, data: {total_files: 1, ...}}
-        stats = data.data;
-        console.log('[Knowledge API] 使用 data.data 作为统计数据:', stats);
-      } else if ('total_files' in data || 'total_size' in data || 'total_chunks' in data) {
-        // 格式: {total_files: 1, total_size: 123, ...}
-        stats = data;
-        console.log('[Knowledge API] 使用 data 作为统计数据:', stats);
+    // 获取文件列表来计算统计数据
+    const fileListResponse = await http.get<any>(`/knowledge-base/${agentId}/documents`);
+    const fileData = fileListResponse.data;
+    
+    let fileList: any[] = [];
+    if (fileData && typeof fileData === 'object') {
+      if ('data' in fileData && Array.isArray(fileData.data)) {
+        fileList = fileData.data;
+      } else if (Array.isArray(fileData)) {
+        fileList = fileData;
       }
     }
     
-    console.log('[Knowledge API] 提取的 stats 对象:', stats);
-    console.log('[Knowledge API] stats.total_files:', stats.total_files);
-    console.log('[Knowledge API] stats.file_count:', stats.file_count);
-    console.log('[Knowledge API] stats.total_size:', stats.total_size);
-    console.log('[Knowledge API] stats.total_size_mb:', stats.total_size_mb);
-    console.log('[Knowledge API] stats.total_chunks:', stats.total_chunks);
+    console.log('[Knowledge API] 用于统计的文件列表:', fileList);
     
-    // 规范化字段名和单位
+    // 从文件列表计算统计数据
+    const totalFiles = fileList.length;
+    const totalSize = fileList.reduce((sum, file) => {
+      const fileSize = file.file_size || 0; // 字节数
+      return sum + fileSize;
+    }, 0);
+    const totalChunks = fileList.reduce((sum, file) => {
+      return sum + parseInt(file.chunks_count || 0);
+    }, 0);
+    
     const normalizedStats: KnowledgeStats = {
-      total_files: parseInt(stats.total_files || stats.file_count || stats.files || 0),
-      total_size_mb: stats.total_size_mb 
-        ? parseFloat(stats.total_size_mb)
-        : stats.total_size 
-          ? stats.total_size / (1024 * 1024)  // 字节转MB
-          : 0,
-      total_chunks: parseInt(stats.total_chunks || stats.chunk_count || stats.chunks || 0),
+      total_files: totalFiles,
+      total_size_mb: totalSize / (1024 * 1024), // 字节转MB
+      total_chunks: totalChunks,
     };
     
-    console.log('[Knowledge API] 规范化后的统计数据:', normalizedStats);
+    console.log('[Knowledge API] 计算后的统计数据:', normalizedStats);
     
     return normalizedStats;
   },
