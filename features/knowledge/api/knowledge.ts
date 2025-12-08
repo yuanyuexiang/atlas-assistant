@@ -56,16 +56,32 @@ export const knowledgeApi = {
     console.log('[Knowledge API] 提取的文件列表:', fileList);
     
     // 规范化数据格式
-    const normalizedFiles = fileList.map((file: any) => ({
-      file_id: file.file_id || file.id || '',
-      filename: file.filename || file.name || file.file_name || '',
-      file_size_mb: parseFloat(file.file_size_mb || file.size_mb || file.size || 0),
-      chunks_count: parseInt(file.chunks_count || file.chunks || file.chunk_count || 0),
-      upload_time: file.upload_time || file.uploaded_at || file.created_at || new Date().toISOString(),
-      status: file.status || 'ready',
-      processing_progress: parseInt(file.processing_progress || 100),
-      error_message: file.error_message || null,
-    }));
+    const normalizedFiles = fileList.map((file: any) => {
+      // 处理文件大小：可能是字节数或MB数
+      let fileSizeMb = 0;
+      if (file.file_size_mb) {
+        fileSizeMb = parseFloat(file.file_size_mb);
+      } else if (file.size_mb) {
+        fileSizeMb = parseFloat(file.size_mb);
+      } else if (file.file_size) {
+        // 字节转MB
+        fileSizeMb = file.file_size / (1024 * 1024);
+      } else if (file.size) {
+        // 字节转MB
+        fileSizeMb = file.size / (1024 * 1024);
+      }
+      
+      return {
+        file_id: file.file_id || file.id || '',
+        filename: file.filename || file.name || file.file_name || '',
+        file_size_mb: fileSizeMb,
+        chunks_count: parseInt(file.chunks_count || file.chunks || file.chunk_count || 0),
+        upload_time: file.upload_time || file.uploaded_at || file.created_at || new Date().toISOString(),
+        status: file.status || 'ready',
+        processing_progress: parseInt(file.processing_progress || 100),
+        error_message: file.error_message || null,
+      };
+    });
     
     console.log('[Knowledge API] 规范化后的文件列表:', normalizedFiles);
     
