@@ -70,7 +70,23 @@ http.interceptors.response.use(
           }
           break;
         case 403:
-          message.error('没有权限访问');
+          // 检查是否是认证失败（token过期或无效）
+          const errorDetail = (data as any)?.detail || '';
+          if (errorDetail.includes('Not authenticated') || errorDetail.includes('not authenticated')) {
+            // 清除认证信息
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem('atlas_user');
+            localStorage.removeItem('auth-storage');
+            
+            message.error('登录已过期，请重新登录');
+            
+            // 跳转到登录页
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+            }
+          } else {
+            message.error('没有权限访问');
+          }
           break;
         case 404:
           // 404 错误由组件自己处理，不显示全局提示
