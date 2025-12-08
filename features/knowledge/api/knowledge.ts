@@ -106,6 +106,8 @@ export const knowledgeApi = {
     const data = response.data;
     
     console.log('[Knowledge API] 获取统计数据 - 原始响应:', data);
+    console.log('[Knowledge API] data.data 内容:', data.data);
+    console.log('[Knowledge API] data.data 的所有键:', data.data ? Object.keys(data.data) : 'null');
     
     // 处理可能的嵌套结构
     let stats: any = {};
@@ -114,11 +116,20 @@ export const knowledgeApi = {
       if ('data' in data && typeof data.data === 'object') {
         // 格式: {success: true, data: {total_files: 1, ...}}
         stats = data.data;
+        console.log('[Knowledge API] 使用 data.data 作为统计数据:', stats);
       } else if ('total_files' in data || 'total_size' in data || 'total_chunks' in data) {
         // 格式: {total_files: 1, total_size: 123, ...}
         stats = data;
+        console.log('[Knowledge API] 使用 data 作为统计数据:', stats);
       }
     }
+    
+    console.log('[Knowledge API] 提取的 stats 对象:', stats);
+    console.log('[Knowledge API] stats.total_files:', stats.total_files);
+    console.log('[Knowledge API] stats.file_count:', stats.file_count);
+    console.log('[Knowledge API] stats.total_size:', stats.total_size);
+    console.log('[Knowledge API] stats.total_size_mb:', stats.total_size_mb);
+    console.log('[Knowledge API] stats.total_chunks:', stats.total_chunks);
     
     // 规范化字段名和单位
     const normalizedStats: KnowledgeStats = {

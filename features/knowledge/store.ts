@@ -43,9 +43,14 @@ export const useKnowledgeStore = create<KnowledgeState>((set) => ({
     try {
       const stats = await knowledgeApi.stats(agentId);
       console.log('[Knowledge Store] 统计数据:', stats);
+      console.log('[Knowledge Store] 统计数据类型:', typeof stats, 'keys:', Object.keys(stats));
+      console.log('[Knowledge Store] total_files:', stats?.total_files);
+      console.log('[Knowledge Store] total_size_mb:', stats?.total_size_mb);
+      console.log('[Knowledge Store] total_chunks:', stats?.total_chunks);
       set({ stats });
     } catch (error: any) {
       console.error('[Knowledge Store] 获取统计数据失败:', error);
+      console.error('[Knowledge Store] 错误详情:', error.response?.data);
       // 直接抛出错误，不做任何处理
       throw error;
     }
