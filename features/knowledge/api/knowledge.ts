@@ -101,6 +101,38 @@ export const knowledgeApi = {
     http.post(`/knowledge-base/${agentId}/rebuild`).then(res => res.data),
 
   // 获取知识库统计信息 (使用 agent UUID)
-  stats: (agentId: string) =>
-    http.get<KnowledgeStats>(`/knowledge-base/${agentId}/stats`).then(res => res.data),
+  stats: async (agentId: string) => {
+    const response = await http.get<any>(`/knowledge-base/${agentId}/stats`);
+    const data = response.data;
+    
+    console.log('[Knowledge API] 获取统计数据 - 原始响应:', data);
+    
+    // 处理可能的嵌套结构
+    let stats: any = {};
+    
+    if (data && typeof data === 'object') {
+      if ('data' in data && typeof data.data === 'object') {
+        // 格式: {success: true, data: {total_files: 1, ...}}
+        stats = data.data;
+      } else if ('total_files' in data || 'total_size' in data || 'total_chunks' in data) {
+        // 格式: {total_files: 1, total_size: 123, ...}
+        stats = data;
+      }
+    }
+    
+    // 规范化字段名和单位
+    const normalizedStats: KnowledgeStats = {
+      total_files: parseInt(stats.total_files || stats.file_count || stats.files || 0),
+      total_size_mb: stats.total_size_mb 
+        ? parseFloat(stats.total_size_mb)
+        : stats.total_size 
+          ? stats.total_size / (1024 * 1024)  // 字节转MB
+          : 0,
+      total_chunks: parseInt(stats.total_chunks || stats.chunk_count || stats.chunks || 0),
+    };
+    
+    console.log('[Knowledge API] 规范化后的统计数据:', normalizedStats);
+    
+    return normalizedStats;
+  },
 };
