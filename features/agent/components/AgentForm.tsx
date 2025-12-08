@@ -23,6 +23,7 @@ export const AgentForm = ({ open, agent, onClose, onSuccess }: AgentFormProps) =
       form.setFieldsValue({
         name: agent.name,
         display_name: agent.display_name,
+        agent_type: agent.agent_type,
         system_prompt: agent.system_prompt,
         description: agent.description,
       });
@@ -36,9 +37,10 @@ export const AgentForm = ({ open, agent, onClose, onSuccess }: AgentFormProps) =
       const values = await form.validateFields();
 
       if (isEdit && agent) {
-        // 更新智能体（不能修改 name 和 agent_type）
+        // 更新智能体（不能修改 name）
         await updateAgent(agent.id, {
           display_name: values.display_name,
+          agent_type: values.agent_type,
           system_prompt: values.system_prompt,
           description: values.description,
         });
@@ -92,21 +94,19 @@ export const AgentForm = ({ open, agent, onClose, onSuccess }: AgentFormProps) =
           <Input placeholder="例如: 智能客服" />
         </Form.Item>
 
-        {!isEdit && (
-          <Form.Item
-            label="智能体类型"
-            name="agent_type"
-            rules={[{ required: true, message: '请选择智能体类型' }]}
-          >
-            <Select placeholder="选择类型">
-              {Object.entries(AGENT_TYPE_MAP).map(([key, label]) => (
-                <Select.Option key={key} value={key}>
-                  {label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        )}
+        <Form.Item
+          label="智能体类型"
+          name="agent_type"
+          rules={[{ required: true, message: '请选择智能体类型' }]}
+        >
+          <Select placeholder="选择类型">
+            {Object.entries(AGENT_TYPE_MAP).map(([key, label]) => (
+              <Select.Option key={key} value={key}>
+                {label}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
         <Form.Item
           label="系统提示词"
