@@ -33,7 +33,8 @@ export const ConversationCard = ({
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/conversations/${conversation.id}`);
+    // 跳转到聊天页面并传递客服ID
+    navigate(`/chat?conversation=${conversation.id}`);
   };
 
   const handleMenuClick = (e: { key: string }) => {

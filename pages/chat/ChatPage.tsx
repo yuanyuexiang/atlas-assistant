@@ -6,6 +6,7 @@ import {
   MessageOutlined,
   HistoryOutlined 
 } from '@ant-design/icons';
+import { useSearchParams } from 'react-router';
 import { ChatWindow } from '@/features/chat/components/ChatWindow';
 import { ChatInput } from '@/features/chat/components/ChatInput';
 import { useConversationList } from '@/features/conversation/hooks/useConversation';
@@ -13,20 +14,32 @@ import { useChatStore } from '@/features/chat/store';
 import styles from './ChatPage.module.css';
 
 export default function ChatPage() {
+  const [searchParams] = useSearchParams();
   const [conversationId, setConversationId] = useState<string>('');
   const { conversations, loading } = useConversationList();
   const { loadMessages, clearHistory, messages } = useChatStore();
   const { message } = App.useApp();
 
-  // 自动选择第一个在线客服
+  // 从 URL 参数读取客服ID并自动选中
   useEffect(() => {
+    const conversationFromUrl = searchParams.get('conversation');
+    if (conversationFromUrl && conversations.length > 0) {
+      // 检查URL参数中的客服是否存在
+      const targetConversation = conversations.find(c => c.id === conversationFromUrl);
+      if (targetConversation) {
+        setConversationId(conversationFromUrl);
+        return;
+      }
+    }
+    
+    // 如果没有URL参数或客服不存在，自动选择第一个在线客服
     if (conversations.length > 0 && !conversationId) {
       // 优先选择在线的客服
       const onlineConversation = conversations.find(c => c.status === 'online');
       const targetConversation = onlineConversation || conversations[0];
       setConversationId(targetConversation.id);
     }
-  }, [conversations, conversationId]);
+  }, [conversations, conversationId, searchParams]);
 
   // 当切换客服时，加载历史消息
   useEffect(() => {
